@@ -30,13 +30,13 @@ export const Sidebar: React.FC = () => {
       <div className={Styles.logo}>🎓 Mon Logiciel</div>
 
       <List className={Styles.navLinks}>
-        <ListItem component={Link} to="/TBoard" className={Styles.link} button>
+        <ListItem component={Link} to="/TBoard" className={Styles.link} >
           <ListItemIcon>
             <DashboardIcon />
           </ListItemIcon>
           <ListItemText primary="Dashboard" />
         </ListItem>
- <ListItem component={Link} to="/TBoard" className={Styles.link} button>
+ <ListItem component={Link} to="/TBoard" className={Styles.link} >
           <ListItemIcon>
             <PersonAddDisabledSharpIcon />
           </ListItemIcon>
@@ -46,7 +46,7 @@ export const Sidebar: React.FC = () => {
           component={Link}
           to="/Etudiantes"
           className={Styles.link}
-          button
+          
         >
           <ListItemIcon>
             <PeopleIcon />
@@ -54,7 +54,7 @@ export const Sidebar: React.FC = () => {
           <ListItemText primary="Gestion des élèves" />
         </ListItem>
 
-        <ListItem component={Link} to="/Matires" className={Styles.link} button>
+        <ListItem component={Link} to="/Matires" className={Styles.link} >
           <ListItemIcon>
             <SchoolIcon />
           </ListItemIcon>
@@ -65,7 +65,7 @@ export const Sidebar: React.FC = () => {
           component={Link}
           to="/Paimentes"
           className={Styles.link}
-          button
+          
         >
           <ListItemIcon>
             <PaymentIcon />
@@ -73,7 +73,7 @@ export const Sidebar: React.FC = () => {
           <ListItemText primary="Paiements" />
         </ListItem>
 
-        <ListItem onClick={toggleRapports} className={Styles.link} button>
+        <ListItem onClick={toggleRapports} className={Styles.link} >
           <ListItemIcon>
             <AssessmentIcon />
           </ListItemIcon>
@@ -87,7 +87,7 @@ export const Sidebar: React.FC = () => {
               component={Link}
               to="/RapportPaiements"
               className={Styles.link}
-              button
+              
               sx={{ pl: 4 }}
             >
               <ListItemIcon>
@@ -100,7 +100,7 @@ export const Sidebar: React.FC = () => {
               component={Link}
               to="/RapportEleves"
               className={Styles.link}
-              button
+              
               sx={{ pl: 4 }}
             >
               <ListItemIcon>
@@ -113,7 +113,7 @@ export const Sidebar: React.FC = () => {
               component={Link}
               to="/RapportAbsences"
               className={Styles.link}
-              button
+              
               sx={{ pl: 4 }}
             >
               <ListItemIcon>
@@ -126,7 +126,7 @@ export const Sidebar: React.FC = () => {
               component={Link}
               to="/RapportGeneral"
               className={Styles.link}
-              button
+              
               sx={{ pl: 4 }}
             >
               <ListItemIcon>
@@ -141,7 +141,7 @@ export const Sidebar: React.FC = () => {
           component={Link}
           to="/parametres"
           className={Styles.link}
-          button
+          
         >
           <ListItemIcon>
             <SettingsIcon />

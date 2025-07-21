@@ -1,4 +1,3 @@
-import { Types } from "mongoose";
 import { Matieres } from "../models/Matieres";
 
 interface Imatiere {

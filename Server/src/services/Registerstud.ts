@@ -22,6 +22,9 @@ export const Registerstud =async ({
   if (!identifinate)
     return { StatusCode: 401, data: "ther isn`t identifiante" };
   if (!Name || !Age || !Nivuea || !Telephone || !modules || !Date) return { StatusCode: 501, data: "you have insert all informations" };
+  const getnamOfStundets = await Studentemodel.findOne({Name})
+  if(getnamOfStundets) return { StatusCode: 404, data: "studentes already exist " };
+
   const Allmodel = await Promise.all(
    modules.map(async(Name)=>{
       const searchemodel = await Matieres.findOne({name:Name.name})
@@ -39,7 +42,6 @@ export const Registerstud =async ({
   })
   if(!newStudent) return {StatusCode:404,data:"no Resgestration"}
    await newStudent.save()
-// if(!getmodel) return {StatusCode:404,data:"ther isn`t model"}
  return { StatusCode: 200, data: newStudent }
 
 };
@@ -51,4 +53,55 @@ export const getStudentes=async({identifinate}:Istundet)=>{
   const getStudents = await Studentemodel.find()
   if(!getStudents) return { StatusCode: 401, data: "ther isn`t Studentes" };
   return { StatusCode: 200, data: getStudents };
+}
+interface Iupdate{
+  identifinate:string,
+  idStud:string,
+  Name:string,
+  Age:number,
+  Nivuea:string,
+  Telephone:number,
+  modules:any []
+}
+export const updateStudent=async({identifinate,idStud,Name,Age,Nivuea,Telephone,modules}:Iupdate)=>{
+if(!identifinate) return {StatusCode:404,data:"identinfiante not provide"}
+if(!idStud && !Name  && !Age && !Nivuea && !Telephone && !modules) return {StatusCode:404,data:"Id not valid"}
+const getnameofstud = await Studentemodel.findOne({Name})
+if(getnameofstud) return {StatusCode:404,data:"Name deja exister"}
+ const getMatieres = await Promise.all( modules.map(async(Nam)=>{
+const getmatieres = await Matieres.findOne({name:Nam.name})
+if(!getmatieres)  return null
+
+return {
+  matid:getmatieres._id,
+  name:getmatieres.name,
+  prix:getmatieres.prix
+}
+}))
+ 
+ const validatmat = getMatieres.filter((item)=>item!=null)
+ const updateStude =await Studentemodel.findByIdAndUpdate(idStud,{$set:{Name,Age,Nivuea,Telephone,modules:validatmat}},{returnDocument:"after"})
+ if(!updateStude) return {StatusCode:501,data:"updating not valide"}
+ return {StatusCode:200,data:updateStude} 
+}
+interface Istud {
+  identifinate:string,
+  idStud:string
+}
+export const DeletStudents=async({identifinate,idStud}:Istud)=>{
+  if(!identifinate ) return {StatusCode:404,data:"identinfiante not provide"}
+  if(!idStud) return {StatusCode:404,data:"id not provider"}
+const Deletone = await Studentemodel.findByIdAndDelete(idStud)
+if(!Deletone) return {StatusCode:404,data:"failed delete"}
+return {StatusCode:200,data:"succued delete"}
+
+
+}
+export const getStudentesOne=async({identifinate,idStud}:Istud)=>{
+if(!identifinate ) return {StatusCode:404,data:"identinfiante not provide"}
+  if(!idStud) return {StatusCode:404,data:"id not provider"}
+  const getOne = await Studentemodel.findById(idStud)
+  if(!getOne) return {StatusCode:404,data:"failed getOne student"}
+  return {StatusCode:200,data:getOne}
+
 }

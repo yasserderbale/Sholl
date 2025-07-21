@@ -7,7 +7,7 @@ interface Items extends Document {
 interface Istudentes extends Document{
     Name:string,
     Age:number,
-    Nivuea:number,
+    Nivuea:string,
     Telephone:number,
     modules:Items[],
     Date:Date
@@ -20,7 +20,7 @@ const itemShema=new mongoose.Schema<Items>({
 const StudenteShema=new mongoose.Schema<Istudentes>({
 Name:{type:String,required:true},
 Age:{type:Number,required:true},
-Nivuea:{type:Number,required:true},
+Nivuea:{type:String,required:true},
 Telephone:{type:Number,required:true},
 modules :[itemShema],
 Date:{type:Date,required:true}

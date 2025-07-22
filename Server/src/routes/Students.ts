@@ -1,5 +1,5 @@
 import express from 'express'
-import { DeletStudents, getStudentes, getStudentesOne, Registerstud, updateStudent } from '../services/Registerstud'
+import { DeletStudents, getStudentes, getStudentesOne, Registerstud, SearchStudentes, updateStudent } from '../services/Registerstud'
 import { validatejwt } from '../medallware/ValidateJWT'
 const route=express.Router()
 route.post("/Student",validatejwt,async(req,res)=>{    
@@ -11,6 +11,12 @@ route.post("/Student",validatejwt,async(req,res)=>{
 route.get("/Student",validatejwt,async(req,res)=>{
     const identifinate=(req as any).payload
 const response = await getStudentes({identifinate})
+res.status(response.StatusCode).json(response)
+})
+route.get("/Search",validatejwt,async(req,res)=>{
+    const identifinate=(req as any).payload
+    const name = req.query.name || ""
+const response = await SearchStudentes({identifinate,name})
 res.status(response.StatusCode).json(response)
 })
 route.get("/Student/:id",validatejwt,async(req,res)=>{

@@ -36,7 +36,7 @@ export const Sidebar: React.FC = () => {
           </ListItemIcon>
           <ListItemText primary="Dashboard" />
         </ListItem>
- <ListItem component={Link} to="/TBoard" className={Styles.link} >
+ <ListItem component={Link} to="/Abcenses" className={Styles.link} >
           <ListItemIcon>
             <PersonAddDisabledSharpIcon />
           </ListItemIcon>

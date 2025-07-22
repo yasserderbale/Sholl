@@ -54,6 +54,20 @@ export const getStudentes=async({identifinate}:Istundet)=>{
   if(!getStudents) return { StatusCode: 401, data: "ther isn`t Studentes" };
   return { StatusCode: 200, data: getStudents };
 }
+interface Istudsearch{
+  identifinate:string,
+  name:any
+}
+export const SearchStudentes=async({identifinate,name}:Istudsearch)=>{
+   if (!identifinate) return { StatusCode: 404, data: "ther isn`t identifiante" };
+      if (!name) return { StatusCode: 404, data: "ther isn`t text of searche" };
+
+  const getStudent = await Studentemodel.find({
+    Name:{$regex:name,$options:"i"}})
+if(!getStudentes) return{StatusCode:404,data:"can`t dearche student"}
+return { StatusCode: 200, data: getStudent };
+}
+
 interface Iupdate{
   identifinate:string,
   idStud:string,

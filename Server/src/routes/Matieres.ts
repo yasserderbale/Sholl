@@ -1,6 +1,6 @@
 import express from 'express'
 import { validatejwt } from '../medallware/ValidateJWT'
-import { Newmatire } from '../services/Newmatire'
+import { Newmatire } from '../services/Matieres'
 import { Deletmatiere, Getmatieres, Getonemat, updatematiere } from '../services/Matieres'
 const route = express.Router()
 route.get("/Matieres",validatejwt,async(req,res)=>{

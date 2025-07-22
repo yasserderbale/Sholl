@@ -10,6 +10,7 @@ import { Paimentes } from "./Pages/Paimentes";
 import { Parametres } from "./Pages/Parametres";
 import { Sidebar } from "./componetes/Sidebare";
 import { Logine } from "./Pages/Logine";
+import { Abcenses } from "./Pages/Abcenses";
 function App() {
   return (
     <>
@@ -30,7 +31,7 @@ function App() {
             <Route path="/RapportAbsences" element={<RapportAbsences />} />
             <Route path="/RapportGeneral" element={<RapportGeneral />} />
             <Route path="/Parametres" element={<Parametres />} />
-            <Route path="*" element={< Navigate to ="/"/>}/>
+            <Route path="/Abcenses" element={<Abcenses />} />
           </Routes>
         </div>
       }/>

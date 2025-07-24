@@ -3,6 +3,7 @@ import mongoose from "mongoose"
 import loginAdmn from "./routes/LoginAdmin"
 import Student from "./routes/Students"
 import Matier from "./routes/Matieres"
+import Abcense from "./routes/Abcenses"
 const app=express()
 app.use(express.json())
 mongoose.connect("mongodb://localhost:27017/school").then(()=>{
@@ -14,6 +15,7 @@ mongoose.connect("mongodb://localhost:27017/school").then(()=>{
 app.use(loginAdmn)
 app.use(Student)
 app.use(Matier)
+app.use(Abcense)
 const port = 3000
 app.listen(port,()=>{
     console.log("server run on",port)

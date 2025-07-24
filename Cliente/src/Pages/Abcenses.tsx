@@ -20,18 +20,20 @@ interface Absence {
   nom: string;
   date: string;
   cause: string;
+  Matieres:string
 }
 
 export const Abcenses = () => {
   const [absences, setAbsences] = useState<Absence[]>([
-    { id: 1, nom: "Yasser", date: "2024-12-01", cause: "Maladie" },
-    { id: 2, nom: "Fatima", date: "2024-12-05", cause: "Voyage" },
+    { id: 1, nom: "Yasser", date: "2024-12-01", cause: "Maladie" ,Matieres:"math"},
+    { id: 2, nom: "Fatima", date: "2024-12-05", cause: "Voyage",Matieres:"math" },
   ]);
   const [searchNom, setSearchNom] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [nom, setNom] = useState("");
   const [date, setDate] = useState("");
   const [cause, setCause] = useState("");
+  const [Matieres,setMatieres]=useState("")
 
   const ajouterAbsence = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +42,7 @@ export const Abcenses = () => {
       nom,
       date,
       cause,
+      Matieres
     };
     setAbsences([...absences, nouvelleAbsence]);
     setNom("");
@@ -85,6 +88,7 @@ export const Abcenses = () => {
                 <TableCell>Nom</TableCell>
                 <TableCell>Date</TableCell>
                 <TableCell>Cause</TableCell>
+                <TableCell>Matieres</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -93,6 +97,7 @@ export const Abcenses = () => {
                   <TableCell>{abs.nom}</TableCell>
                   <TableCell>{abs.date}</TableCell>
                   <TableCell>{abs.cause}</TableCell>
+                  <TableCell>{abs.Matieres}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -128,6 +133,14 @@ export const Abcenses = () => {
               />
               <TextField
                 label="Cause"
+                value={cause}
+                onChange={(e) => setCause(e.target.value)}
+                required
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                label="Matieres"
                 value={cause}
                 onChange={(e) => setCause(e.target.value)}
                 required

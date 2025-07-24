@@ -1,8 +1,7 @@
-import mongoose, { Document, model, Schema } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 interface Items extends Document {
     matid:mongoose.Types.ObjectId,
-    name:string,
-    prix:number
+   
 }
 interface Istudentes extends Document{
     Name:string,
@@ -14,8 +13,7 @@ interface Istudentes extends Document{
 }
 const itemShema=new mongoose.Schema<Items>({
     matid:{type:Schema.Types.ObjectId,ref:"Matiere"},
-    name:{type:String,required:true},
-    prix:{type:Number,required:true},
+   
 })
 const StudenteShema=new mongoose.Schema<Istudentes>({
 Name:{type:String,required:true},

@@ -1,27 +1,28 @@
 import mongoose, { Document, Schema } from "mongoose"
-
-interface IabcensesofMat extends Document{
-    idMat:mongoose.Types.ObjectId,
-    cause:string
+interface IabcensesofMat {
+    idMat:mongoose.Types.ObjectId | mongoose.Types.ObjectId[],
 }
-interface IabcensesofDat extends Document{
+interface IabcensesofDat{
+    cause:string,
     Date:Date,
     matieres:IabcensesofMat[]
 }
-interface Iabcenses extends Document{
-    IdStud:mongoose.Types.ObjectId,
-    Abcense:IabcensesofDat[]
+interface IAbcense {
+    idStud:mongoose.Types.ObjectId,
+    Abcenses:IabcensesofDat[]
 }
-const Mat = new mongoose.Schema<IabcensesofMat>({
-idMat:{type:Schema.Types.ObjectId,ref:"Matiere",required:true},
-cause:{type:String}
+const Mat=new mongoose.Schema<IabcensesofMat>({
+    idMat:{type:Schema.Types.ObjectId,ref:"Matiere",required:true}
 })
 const Dat = new mongoose.Schema<IabcensesofDat>({
-    Date:{type:Date},
-    matieres:[Mat]
+cause:{type:String},
+Date:{type:Date},
+matieres:[Mat]
 })
-const abcense = new mongoose.Schema<Iabcenses>({
-    IdStud:{type:Schema.Types.ObjectId,ref:"Studente",required:true},
-    Abcense:[Dat]
+const Abcenses = new mongoose.Schema<IAbcense>({
+        idStud:{type:Schema.Types.ObjectId,ref:"Studente",required:true},
+        Abcenses:[Dat]
+
 })
- export const Abcensesmodel = mongoose.model<Iabcenses>("Abcense",abcense)
+
+  export const Abcensesmodel = mongoose.model<IAbcense>("Abcense",Abcenses)

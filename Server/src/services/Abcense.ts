@@ -14,7 +14,7 @@ console.log(idMat)
 if(!idMat || !Date || !idStud || !cause) return {StatusCode:501,data:"you`ve insert all informations"}
     
      const Abcense={
-        Date,cause,matieres:[{idMat}] } 
+        Date,cause,matieres:Array.isArray(idMat)? idMat.map((id)=>({idMat:id})):[{idMat}]}
 const result = await Abcensesmodel.findOne({idStud})
     
  if( !result){  

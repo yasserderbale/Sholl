@@ -6,12 +6,13 @@ interface IStudents {
 matieres:Imatieres[],
 Mois:string[],
 Montante:number,
-Date:Date
+Date:Date,
+status:Number | String 
 }
 interface Ipaimentes extends Document{
     idStud:mongoose.Types.ObjectId,
     paimentes:IStudents[],
-    status:Number | String
+    
 }
 const matieres = new Schema<Imatieres>({
     idMat:{type:Schema.Types.ObjectId,ref:"Matiere"},
@@ -21,12 +22,13 @@ const Studentes = new Schema <IStudents>({
     matieres:[matieres],
 Mois:[{type:String}],
 Montante:{type:Number},
-Date:{type:Date}
+Date:{type:Date},
+status:[String,Number]
 }) 
 const Paimentes = new Schema<Ipaimentes>({
     idStud:{type:Schema.Types.ObjectId,ref:"Studente"},
     paimentes:[Studentes],
-    status:[String,Number]
+    
 })
 
 export const paimentesModel = mongoose.model<Ipaimentes>("Paimente",Paimentes)

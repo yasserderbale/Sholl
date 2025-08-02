@@ -1,6 +1,6 @@
 import express from "express"
 import { validatejwt } from "../medallware/ValidateJWT"
-import { CompletePaymente, getPaimentes, RegistnewPaimente } from "../services/Paimentes"
+import { CompletePaymente, getOnePaimente, getPaimentes, RegistnewPaimente } from "../services/Paimentes"
 const route = express.Router()
 route.post("/Paimentes",validatejwt,async(req,res)=>{
 const identifiante = (req as any).payload
@@ -23,5 +23,11 @@ const  {addPrice} = req.body
   }
 const response = await CompletePaymente({identifiante,idStud,idPaiment,addPrice})
 res.status(response.StatusCode).json(response)
+})
+route.get("/Paimentes/:idStud",validatejwt,async(req,res)=>{
+  const identifiante = (req as any).payload
+  const {idStud} = req.params
+  const response = await getOnePaimente({idStud,identifiante})
+  res.status(response.StatusCode).json(response)
 })
 export default route

@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useRef } from "react";
 import Styles from "../Styles/Login.module.css";
-
 export function Logine() {
+  const Identifiant  = useRef()
+  const password  = useRef()
+
   return (
     <div className={Styles.container}>
       {/* Left Side */}

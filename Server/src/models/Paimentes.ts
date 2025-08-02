@@ -4,7 +4,7 @@ interface Imatieres {
 }
 interface IStudents {
 matieres:Imatieres[],
-Mois:string[],
+Mois:string[] ,
 Montante:number,
 Date:Date,
 status:Number | String ,

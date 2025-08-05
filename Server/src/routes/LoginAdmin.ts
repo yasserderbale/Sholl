@@ -1,6 +1,5 @@
 import express from "express"
 import { Logineadmin } from "../services/Logineadmin"
-import { validatejwt } from "../medallware/ValidateJWT"
 const route =express.Router()
 route.post("/Login",async(req,res)=>{
     const {identifiante,password}=req.body

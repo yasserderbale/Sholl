@@ -8,12 +8,8 @@ interface Ilogin{
 }
 export const Logineadmin =async ({identifiante,password}:Ilogin) => {
   const booladmin=await loginemodel.findOne({identifiante})
-  console.log(booladmin)
   if(!booladmin){
-    const hach=await bcrypt.hash(password,10)
-    const send = await loginemodel.create({identifiante,password:hach})
-    await send.save()
-    return {StatusCode:200,data:send}
+    return {StatusCode:501,data:"Identifiante not valid "}
   }
   const isvalid=await bcrypt.compare(password,booladmin.password)
   if(!isvalid) return{StatusCode:501,data:"password not valid"}

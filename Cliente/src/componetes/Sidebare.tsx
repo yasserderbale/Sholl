@@ -17,6 +17,7 @@ import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import PersonAddDisabledSharpIcon from '@mui/icons-material/PersonAddDisabledSharp';
+import { usAuth } from "../Context/AuthContext";
 
 export const Sidebar: React.FC = () => {
   const [openRapports, setOpenRapports] = React.useState(false);
@@ -24,7 +25,7 @@ export const Sidebar: React.FC = () => {
   const toggleRapports = () => {
     setOpenRapports(!openRapports);
   };
-
+const {logoute} = usAuth()
   return (
     <aside className={Styles.sidebar}>
       <div className={Styles.logo}>🎓 Mon Logiciel</div>
@@ -150,7 +151,7 @@ export const Sidebar: React.FC = () => {
         </ListItem>
       </List>
 
-      <button className={Styles.logout}>
+      <button onClick={logoute} className={Styles.logout}>
         <LogoutIcon style={{ marginRight: "8px" }} />
         Logout
       </button>

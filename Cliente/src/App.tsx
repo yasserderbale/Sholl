@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes,Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
 import { TablBoard } from "./Pages/TablBoard";
 import { Etudiantes } from "./Pages/Etudiantes";
 import { Matires } from "./Pages/Matires";
@@ -11,33 +11,39 @@ import { Parametres } from "./Pages/Parametres";
 import { Sidebar } from "./componetes/Sidebare";
 import { Logine } from "./Pages/Logine";
 import { Abcenses } from "./Pages/Abcenses";
+import { AuthProvider } from "./Context/AuthContext";
+import { ProtectedRoute } from "./Pages/ProtectedRoute";
+
 function App() {
   return (
-    <>
-  
+    <AuthProvider>
       <BrowserRouter>
-      <Routes>
-      <Route path="/" element={<Logine/>}/>
-      <Route path="/*" element={
-        <div className="container">
-          <Sidebar/>
-          <Routes>
-            <Route path="/TBoard" element={<TablBoard />} />
-            <Route path="/Etudiantes" element={<Etudiantes />} />
-            <Route path="/Matires" element={<Matires />} />
-            <Route path="/Paimentes" element={<Paimentes />} />
-            <Route path="/RapportPaiements" element={<RapportPaiements />} />
-            <Route path="/RapportEleves" element={<RapportEleves />} />
-            <Route path="/RapportAbsences" element={<RapportAbsences />} />
-            <Route path="/RapportGeneral" element={<RapportGeneral />} />
-            <Route path="/Parametres" element={<Parametres />} />
-            <Route path="/Abcenses" element={<Abcenses />} />
-          </Routes>
-        </div>
-      }/>
-      </Routes>
+        <Routes>
+          <Route path="/" element={<Logine />} />
+          <Route  
+            element={
+              <ProtectedRoute>
+                <div className="container">
+                  <Sidebar />
+                  <Outlet /> {/* يعرض الـ Nested Routes */}
+                </div>
+              </ProtectedRoute>
+            }
+          >
+            <Route path="TBoard" element={<TablBoard />} />
+            <Route path="Etudiantes" element={<Etudiantes />} />
+            <Route path="Matires" element={<Matires />} />
+            <Route path="Paimentes" element={<Paimentes />} />
+            <Route path="RapportPaiements" element={<RapportPaiements />} />
+            <Route path="RapportEleves" element={<RapportEleves />} />
+            <Route path="RapportAbsences" element={<RapportAbsences />} />
+            <Route path="RapportGeneral" element={<RapportGeneral />} />
+            <Route path="Parametres" element={<Parametres />} />
+            <Route path="Abcenses" element={<Abcenses />} />
+          </Route>
+        </Routes>
       </BrowserRouter>
-    </>
+    </AuthProvider>
   );
 }
 

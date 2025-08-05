@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Styles from '../Styles/Matieres.module.css';
 import UpdateIcon from '@mui/icons-material/Update';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
@@ -16,41 +16,33 @@ import {
   TextField,
 } from '@mui/material';
 
-interface Matiere {
-  id: number;
-  nom: string;
-  prix: number;
-}
+
 
 export function Matires() {
-  const [matieres, setMatieres] = useState<Matiere[]>([
-    { id: 1, nom: 'Maths', prix: 2000 },
-    { id: 2, nom: 'Physique', prix: 2500 },
-  ]);
+ const matref = useRef<HTMLInputElement>(null)
+ const prixref = useRef<HTMLInputElement>(null)
 
   const [showModal, setShowModal] = useState(false);
   const [idASupprimer, setIdASupprimer] = useState<number | null>(null);
 
-  const [nomMatiere, setNomMatiere] = useState('');
-  const [prixMatiere, setPrixMatiere] = useState<number | ''>('');
-
-  const ajouterMatiere = (e: React.FormEvent) => {
-    e.preventDefault();
-    const nouvelleMatiere: Matiere = {
-      id: matieres.length + 1,
-      nom: nomMatiere,
-      prix: Number(prixMatiere),
-    };
-    setMatieres([...matieres, nouvelleMatiere]);
-    setNomMatiere('');
-    setPrixMatiere('');
-    setShowModal(false);
-  };
-
-  const supprimerMatiere = (id: number) => {
-    setMatieres(matieres.filter((m) => m.id !== id));
-    setIdASupprimer(null);
-  };
+  const addMat  =async (e:any)=>{
+    e.preventDefault()
+    const name = matref.current?.value
+    const prix = prixref.current?.value
+    const data = await fetch("http://localhost:3000/newMatire",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({name,prix})
+    })
+    const response = await data.json()
+    if(response.StatusCode!==200) {
+      alert(response.message)
+       return } 
+      alert("ajouter novue matiere")
+    console.log(response)
+  }
 
   return (
     <Box className={Styles.page} p={3}>
@@ -77,25 +69,7 @@ export function Matires() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {matieres.map((mat) => (
-              <TableRow key={mat.id}>
-                <TableCell>{mat.nom}</TableCell>
-                <TableCell>{mat.prix} DA</TableCell>
-                <TableCell>
-                  <Button size="small" className={Styles.btnModifier}>
-                    <UpdateIcon/>
-                     Modifier
-                  </Button>
-                  <Button
-                    size="small"
-                    className={Styles.btnSupprimer}
-                    onClick={() => setIdASupprimer(mat.id)}
-                  >
-                    <DeleteForeverIcon/> Supprimer
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+           
           </TableBody>
         </Table>
       </Paper>
@@ -107,21 +81,19 @@ export function Matires() {
             <Typography variant="h6" className={Styles.titre}>
               Ajouter une matière
             </Typography>
-            <form onSubmit={ajouterMatiere} className={Styles.form}>
+            <form onSubmit={addMat}  className={Styles.form}>
               <TextField
+              ref={matref}
                 label="Nom de la matière"
-                value={nomMatiere}
-                onChange={(e) => setNomMatiere(e.target.value)}
                 className={Styles.input}
                 required
                 fullWidth
                 margin="normal"
               />
               <TextField
+              ref={prixref}
                 label="Prix mensuel"
                 type="number"
-                value={prixMatiere}
-                onChange={(e) => setPrixMatiere(Number(e.target.value))}
                 className={Styles.input}
                 required
                 fullWidth
@@ -155,7 +127,6 @@ export function Matires() {
               <Button
                 variant="contained"
                 color="error"
-                onClick={() => supprimerMatiere(idASupprimer!)}
                 className={Styles.btnConfirmer1}
               >
                 Oui

@@ -13,7 +13,7 @@
     })
     export const AuthProvider:FC<PropsWithChildren> = ({children})=>{
     const [tocken,settocken] = useState<string | null>(localStorage.getItem("Tocken"))
-    const [isAuth,setisAuth] = useState(false)
+    const [isAuth,setisAuth] = useState(!!tocken)
     useEffect(()=>{
         const gettocken  = localStorage.getItem("Tocken")
         settocken(gettocken)

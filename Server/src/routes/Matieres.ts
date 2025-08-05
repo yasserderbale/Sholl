@@ -18,6 +18,7 @@ return res.status(response.StatusCode).json(response)
 route.post("/newMatire",validatejwt,async(req,res)=>{
 const identifiante=(req as any).payload
 const {name,prix}=req.body
+console.log(name,prix)
 const response=await Newmatire({identifiante,name,prix})
 return res.status(response.StatusCode).json(response)
 })

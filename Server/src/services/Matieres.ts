@@ -39,11 +39,11 @@ export const updatematiere = async ({
   if (!name && !prix) {
     return { StatusCode: 400, data: "Name or prix is invalid" };
   }
-  const getMat =await Matieres.find()
-  const Filtmatire= getMat.map((item)=>item.name)
-  for(let i of Filtmatire) {
-    if(name==i) return { StatusCode: 400, data: "Matiere Already existe" };
-  }
+  //const getMat =await Matieres.find()
+  //const Filtmatire= getMat.map((item)=>item.name)
+  //for(let i of Filtmatire) {
+    //if(name==i) return { StatusCode: 400, data: "Matiere Already existe" };
+ // }
   const update = await Matieres.findByIdAndUpdate(idmatiere 
    , { $set: { name, prix }},
    {returnDocument:"after"}

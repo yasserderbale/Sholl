@@ -18,13 +18,12 @@ return res.status(response.StatusCode).json(response)
 route.post("/newMatire",validatejwt,async(req,res)=>{
 const identifiante=(req as any).payload
 const {name,prix}=req.body
-console.log(name,prix)
 const response=await Newmatire({identifiante,name,prix})
 return res.status(response.StatusCode).json(response)
 })
-route.delete("/newMatire",validatejwt,async(req,res)=>{
+route.delete("/newMatire/:id",validatejwt,async(req,res)=>{
 const identifiante = (req as any).payload
-const idmatiere="6873f565c01cdc49d9427c77"
+const idmatiere=req.params.id
 const response= await Deletmatiere({idmatiere,identifiante})
 return res.status(response.StatusCode).json(response)
 })

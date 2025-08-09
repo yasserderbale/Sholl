@@ -3,8 +3,7 @@ import { usAuth } from "../Context/AuthContext"
 import type { FC, PropsWithChildren } from "react"
 export const ProtectedRoute: FC<PropsWithChildren> = ({ children }) => {
 
-  const { isAuth,tocken } = usAuth();
-  console.log(isAuth,tocken)
+  const { isAuth } = usAuth();
   return isAuth ? (
     <>
       {children}

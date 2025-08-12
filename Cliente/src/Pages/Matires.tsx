@@ -88,10 +88,12 @@ export function Matires() {
               <TableCell>Nom</TableCell>
               <TableCell>Prix mensuel (DA)</TableCell>
               <TableCell>Actions</TableCell>
-            
             </TableRow>
-    {mat.map((items)=>(
-      <TableRow>
+    
+          </TableHead>
+          <TableBody>
+         {(mat??[]).map((items)=>(
+      <TableRow key={items._id}>
         <TableCell>{items.name}</TableCell>
                 <TableCell>{items.prix}</TableCell>
                 <TableCell><Button onClick={()=>hadndlgetOne(items._id)} startIcon={<UpdateIcon/>}>Modifier</Button>
@@ -100,9 +102,6 @@ export function Matires() {
 
       </TableRow>
     ))}
-          </TableHead>
-          <TableBody>
-         
           </TableBody>
         </Table>
       </Paper>

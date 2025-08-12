@@ -35,7 +35,7 @@ interface IContext {
     const [tocken,settocken] = useState<string | null>(localStorage.getItem("Tocken"))
     const [isAuth,setisAuth] = useState(!!tocken)
     const [mat,setmat] = useState<any[]>([])
-    const [stude,setstud]=useState<any>([])
+    const [stude,setstud]=useState<any[]>([])
    
     const login = (identifiante:string,tocken:string)=>{
         localStorage.setItem("Username",identifiante)
@@ -140,7 +140,6 @@ interface IContext {
       }
     })
     if(!GestStud.ok){
-      alert("failed get Studentes")
       return
     }
     const response = await GestStud.json()

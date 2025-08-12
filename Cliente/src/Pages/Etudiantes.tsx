@@ -1,4 +1,4 @@
-import  React, { useEffect, useRef, useState, type ChangeEvent } from 'react';
+import  React, {  useEffect, useRef, useState  } from 'react';
 import Styles from '../Styles/Etudiantes.module.css';
 import {
   Box,
@@ -12,15 +12,16 @@ import {
   TableBody,
   Paper,
   Modal,
-  Checkbox,
-  FormControlLabel,
   Select,
   OutlinedInput,
   MenuItem,
   type SelectChangeEvent,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { usAuth } from '../Context/AuthContext';
+import { Update } from '@mui/icons-material';
+import DeleteIcon from '@mui/icons-material/Delete';
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
 const MenuProps = {
@@ -40,10 +41,7 @@ export function Etudiantes() {
   const [showModal, setShowModal] = useState(false);
   const [idASupprimer, setIdsupprimer] = useState<number | null>(null);
   const {mat,tocken,getStudentes,stude} = usAuth()
-useEffect(()=>{
-  getStudentes()
-},[])
-console.log(stude)
+
   const name = useRef<HTMLInputElement>(null)
   const age = useRef<HTMLInputElement>(null)
   const niveau=useRef<HTMLInputElement>(null)
@@ -82,8 +80,24 @@ console.log(stude)
     date.current!.value=""
     setModules([])
     setShowModal(false)
+    getStudentes()
     return
   }
+  const DeleteStud =async()=>{
+const remove = await fetch(`http://localhost:3000/Student/${idASupprimer}`,{
+  method:"DELETE",
+  headers:{
+    "Content-Type":"appliation/json",
+    "Authorization":`Bearer ${tocken}`
+  }
+})
+if(!remove.ok){
+  alert("Deleted failed")
+  return
+}
+getStudentes()  
+setIdsupprimer(null)
+}
   return (
     <Box className={Styles.page} p={3}>
       <Typography variant="h4" className={Styles.title} gutterBottom>
@@ -98,7 +112,7 @@ console.log(stude)
           className={Styles.searche}
         />
         <Button
-        startIcon={<AddIcon/>}
+        startIcon={<AddIcon />}
           variant="contained"
           color="primary"
           onClick={() => setShowModal(true)}
@@ -117,13 +131,26 @@ console.log(stude)
               <TableCell>Niveau</TableCell>
               <TableCell>Téléphone</TableCell>
               <TableCell>Modules</TableCell>
-              <TableCell>État</TableCell>
               <TableCell>Date d'inscription</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            
+               {(stude??[]).map((item:any)=>(
+            <TableRow key={item._id}>
+              <TableCell>{item.Name}</TableCell>
+              <TableCell>{item.Age}</TableCell>
+              <TableCell>{item.Nivuea}</TableCell>
+              <TableCell>{item.Telephone}</TableCell>
+              <TableCell>{item.modules.map((modul:any)=>modul.matid.name).join(",")}</TableCell>
+              <TableCell>{item.Date}</TableCell>
+              <TableCell>
+                <Button startIcon={<Update />}></Button>
+                <Button onClick={()=>setIdsupprimer(item._id)} startIcon={<DeleteIcon />}></Button>
+                <Button  startIcon={<VisibilityIcon />}></Button>
+              </TableCell>
+            </TableRow>
+          ))}
           </TableBody>
         </Table>
       </Paper>
@@ -180,7 +207,7 @@ console.log(stude)
      input={<OutlinedInput id="select-multiple-chip" label="Modules" />}
   MenuProps={MenuProps}
 >
-  {mat.map((item) => (
+  {(mat??[]).map((item) => (
     <MenuItem
       key={item._id}
       value={item.name} // تقدر تحط id إذا تحب
@@ -223,6 +250,7 @@ console.log(stude)
             <Typography variant="h6">Êtes-vous sûr de vouloir supprimer ?</Typography>
             <Box className={Styles.modalActions1} display="flex" gap={2}>
               <Button
+              onClick={() => DeleteStud()}
                 variant="contained"
                 color="error"
                 className={Styles.btnConfirmer1}
@@ -231,7 +259,7 @@ console.log(stude)
               </Button>
               <Button
                 variant="outlined"
-                onClick={() => setIdsupprimer(null)}
+                onClick={()=>setIdsupprimer(null)}
                 className={Styles.btnAnnuler1}
               >
                 Non

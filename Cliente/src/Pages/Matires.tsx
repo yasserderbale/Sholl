@@ -14,7 +14,13 @@ import {
   Paper,
   Modal,
   TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+
 import { usAuth } from '../Context/AuthContext';
 export function Matires() { 
  const matref = useRef<HTMLInputElement>(null)
@@ -24,11 +30,8 @@ export function Matires() {
  const prixrefup = useRef<HTMLInputElement>(null)
   const [showModal, setShowModal] = useState(false);
     const [showModalup, setShowModalup] = useState(false);
-
-  const [idASupprimer, setIdASupprimer] = useState(null);
-    const [idup, setIdup] = useState(null);
-
- 
+    const [idASupprimer, setIdASupprimer] = useState(null);
+    const [idup, setIdup] = useState(null); 
   const hadndleAdd =(e:React.FormEvent)=>{  
     const name = matref.current?.value || ''
   const prix = Number(prixref.current?.value ) 
@@ -69,12 +72,13 @@ export function Matires() {
       </Typography>
 
       <Button
+      startIcon={<AddIcon/>}
         variant="contained"
         color="primary"
         onClick={() => setShowModal(true)}
         className={Styles.btnAjouter}
       >
-        ➕ Ajouter une matière
+         Ajouter une matière
       </Button>
 
       <Paper sx={{ mt: 3 }}>
@@ -110,23 +114,35 @@ export function Matires() {
             <Typography variant="h6" className={Styles.titre}>
               Ajouter une matière
             </Typography>
-            <form onSubmit={hadndleAdd}  className={Styles.form}>
+           <form onSubmit={hadndleAdd}  >
+             <FormControl className={Styles.form}>
+              <Select inputRef={matref}
+        labelId="demo-select-small-label"
+        id="demo-select-small"
+        label="Matiere"
+      >
+        <MenuItem value="">
+          <em>None</em>
+        </MenuItem>
+        <MenuItem value={"Arabe"}>Arabe</MenuItem>
+        <MenuItem value={"Math"}>Math</MenuItem>
+        <MenuItem value={"Physice"}>Physice</MenuItem>
+        <MenuItem value={"Science"}>Science</MenuItem>
+        <MenuItem value={"Science"}>Français</MenuItem>
+
+
+        
+
+      </Select>
+        <InputLabel id="demo-simple-select-autowidth-label">Matiere</InputLabel>
               <TextField
-              inputRef={matref}
-                label="Nom de la matière"
-                className={Styles.input}
-                required
-                fullWidth
-                margin="normal"
-              />
-              <TextField
+              className={Styles.input}
               inputRef={prixref}
-                label="Prix mensuel"
                 type="number"
-                className={Styles.input}
                 required
                 fullWidth
                 margin="normal"
+                label="Prix mensuel"
               />
 
               <Box className={Styles.modalActions} display="flex" gap={2}>
@@ -142,7 +158,8 @@ export function Matires() {
                   Annuler
                 </Button>
               </Box>
-            </form>
+            </FormControl>
+           </form>
           </Box>
         </Box>
       </Modal>
@@ -151,7 +168,7 @@ export function Matires() {
     <Modal open={showModalup} onClose={() => setShowModalup(false)}>
         <Box className={Styles.modalOverlay}>
           <Box className={Styles.modalContent}>
-            <Typography variant="h6" className={Styles.titre}>
+            <Typography variant="h6" sx={{paddingBottom:"2px",textAlign:"center"}}>
               Modifier une matière
             </Typography>
             <form  onSubmit={handlupdatone} className={Styles.form}>

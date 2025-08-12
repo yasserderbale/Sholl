@@ -10,7 +10,7 @@
 }
 .titre{
     text-align: center;
-    margin-bottom: 20px;
+    padding-bottom: 38px;
 }
 .btnAjouter {
   background: #1e3a8a;
@@ -57,6 +57,7 @@
 }
 
 .form {
+  width: 100%;
     margin-top: 43px;
   display: flex;
   flex-direction: column;
@@ -64,6 +65,7 @@
 }
 
 .input {
+  padding-top: 33px;
   padding:  17px;
   border: 1px solid #d1d5db; /* لون رمادي فاتح */
   border-radius: 6px;

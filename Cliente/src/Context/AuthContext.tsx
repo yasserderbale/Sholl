@@ -13,7 +13,9 @@ interface IContext {
         addMat:(name:string,prix:number)=>void,
         DelatewoneMat:(idMat:any)=>void,
         getOneMat:(idMat:any)=>Promise<Matiere>,
-        updateone:(idMat:any,name:string,prix:number)=>void
+        updateone:(idMat:any,name:string,prix:number)=>void,
+        getStudentes:()=>void,
+        stude:any
 
     }
     const Authcontext = createContext<IContext>({
@@ -25,13 +27,15 @@ interface IContext {
     addMat:()=>{},
     DelatewoneMat:()=>{},
     getOneMat:async()=>({  name: "", prix: 0 }),
-    updateone:()=>{}
+    updateone:()=>{},
+    getStudentes:()=>{},
+    stude:[]
     })
     export const AuthProvider:FC<PropsWithChildren> = ({children})=>{
     const [tocken,settocken] = useState<string | null>(localStorage.getItem("Tocken"))
     const [isAuth,setisAuth] = useState(!!tocken)
     const [mat,setmat] = useState<any[]>([])
-
+    const [stude,setstud]=useState<any>([])
    
     const login = (identifiante:string,tocken:string)=>{
         localStorage.setItem("Username",identifiante)
@@ -128,8 +132,29 @@ interface IContext {
   console.log(response.data)
   setmat((prev)=>prev.map(m=>m._id===idMat?{...m,name,prix}:m))
   }
+  const getStudentes=async()=>{
+    const GestStud =await fetch("http://localhost:3000/Student",{
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":`Bearer ${tocken}`
+      }
+    })
+    if(!GestStud.ok){
+      alert("failed get Studentes")
+      return
+    }
+    const response = await GestStud.json()
+    if(!response){
+      alert(response.data)
+    }
+    setstud(response.data)
+    
+  }
+  useEffect(()=>{
+    getStudentes()
+  },[])
     return (
-        <Authcontext.Provider value={{login,tocken,isAuth,logoute,mat,addMat,DelatewoneMat,getOneMat,updateone}}>
+        <Authcontext.Provider value={{login,tocken,isAuth,logoute,mat,addMat,DelatewoneMat,getOneMat,updateone,getStudentes,stude}}>
             {children}
         </Authcontext.Provider>
     )

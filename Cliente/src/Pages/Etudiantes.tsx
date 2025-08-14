@@ -1,4 +1,4 @@
-import  React, {  useEffect, useRef, useState  } from 'react';
+import  React, { useRef, useState  } from 'react';
 import Styles from '../Styles/Etudiantes.module.css';
 import {
   Box,
@@ -39,9 +39,9 @@ export function Etudiantes() {
   setModules(typeof(value)==='string'? value.split(','):value)
  };
   const [showModal, setShowModal] = useState(false);
+  const [showModalup, setShowModalup] = useState<number | null>(null);
   const [idASupprimer, setIdsupprimer] = useState<number | null>(null);
-  const {mat,tocken,getStudentes,stude} = usAuth()
-
+  const {mat,tocken,getStudentes,stude,seracheStud} = usAuth()
   const name = useRef<HTMLInputElement>(null)
   const age = useRef<HTMLInputElement>(null)
   const niveau=useRef<HTMLInputElement>(null)
@@ -83,7 +83,26 @@ export function Etudiantes() {
     getStudentes()
     return
   }
-  const DeleteStud =async()=>{
+  const getOneStud = async(id:string)=>{
+       let GetOne = await fetch(`http://localhost:3000/Student/${id}`,{
+      headers:{
+        "Authorization":`Bearer ${tocken}`
+      }
+    })
+    if(!GetOne.ok){
+      alert("FAiled get onStudent")
+      return
+    }
+   const response = await GetOne.json()
+   console.log(response.data)
+    name.current!.value=response.data.Name
+    age.current!.value=response.data.Age
+    niveau.current!.value=response.data.Nivuea
+    phone.current!.value=response.data.Telephone
+    date.current!.value=new Date(response.data.Date).toISOString().split('T')[0]
+    setModules(response.data.modules.map((nam:any)=>nam.matid.name))
+  }
+    const DeleteStud =async()=>{
 const remove = await fetch(`http://localhost:3000/Student/${idASupprimer}`,{
   method:"DELETE",
   headers:{
@@ -98,6 +117,40 @@ if(!remove.ok){
 getStudentes()  
 setIdsupprimer(null)
 }
+const updatOne = async(e:React.FormEvent)=>{
+  e.preventDefault()
+   const Name = name.current?.value
+    const Age = age.current?.value
+    const Nivuea = niveau.current?.value
+    const Telephone = phone.current?.value
+    const Date = date.current?.value
+    if(modules.length==0){
+      alert("no matieres")
+      return
+    }
+    console.log(modules)
+  const Update = await fetch(`http://localhost:3000/Student/${showModalup}`,{
+    method:"PUT",
+    headers:{
+          "Content-Type":"application/json",
+          "Authorization":`Bearer ${tocken}`
+    },
+    body:JSON.stringify({Name,Age,Nivuea,Telephone,Date,modules})
+  })
+  if(!Update.ok){
+    alert("failed update")
+    return
+  }
+  getStudentes()  
+  setShowModalup(null)
+}
+const hadnlSearch=(e:any)=>{
+  const value = e.target.value
+  if(!value){
+    getStudentes()
+  }
+  seracheStud(value)
+}
   return (
     <Box className={Styles.page} p={3}>
       <Typography variant="h4" className={Styles.title} gutterBottom>
@@ -106,6 +159,7 @@ setIdsupprimer(null)
 
       <Box className={Styles.actions} mb={2} display="flex" gap={2}>
         <TextField
+        onChange={hadnlSearch}
           label="Rechercher par nom"
           variant="outlined"
           size="small"
@@ -145,7 +199,7 @@ setIdsupprimer(null)
               <TableCell>{item.modules.map((modul:any)=>modul.matid.name).join(",")}</TableCell>
               <TableCell>{item.Date}</TableCell>
               <TableCell>
-                <Button startIcon={<Update />}></Button>
+                <Button onClick={()=>{setShowModalup(item._id);getOneStud(item._id)}} startIcon={<Update />}></Button>
                 <Button onClick={()=>setIdsupprimer(item._id)} startIcon={<DeleteIcon />}></Button>
                 <Button  startIcon={<VisibilityIcon />}></Button>
               </TableCell>
@@ -215,7 +269,7 @@ setIdsupprimer(null)
       {item.name}
     </MenuItem>
   ))}
-</Select>
+           </Select>
               <Typography variant="subtitle1">Date d'inscription :</Typography>
               <TextField
                 type="date"
@@ -242,7 +296,89 @@ setIdsupprimer(null)
           </Box>
         </Box>
       </Modal>
+      {/* Modal update */}
+      <Modal open={!!showModalup} onClose={() => setShowModalup(null)}>
+        <Box className={Styles.modalOverlay}>
+          <Box className={Styles.modalContent}>
+            <Typography variant="h6" className={Styles.titre}>
+              Modifier un élève
+            </Typography>
+            <form onSubmit={updatOne} className={Styles.form}>
+              <TextField
+              inputRef={name}
+                className={Styles.input}
+                required
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+                inputRef={age}
+                type="number"
+                className={Styles.input}
+                required
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+              inputRef={niveau}
+                className={Styles.input}
+                required
+                fullWidth
+                margin="normal"
+              />
+              <TextField
+              inputRef={phone}
+                className={Styles.input}
+                required
+                fullWidth
+                margin="normal"
+              />
 
+              <Typography variant="subtitle1">Modules :</Typography>
+           <Select
+   labelId="demo-multiple-chip-label"
+   id="demo-multiple-chip"
+     multiple 
+     value={modules}
+  onChange={handleChangeModules}
+     input={<OutlinedInput id="select-multiple-chip" label="Modules" />}
+  MenuProps={MenuProps}
+>
+  {(mat??[]).map((item) => (
+    <MenuItem
+      key={item._id}
+      value={item.name} // تقدر تحط id إذا تحب
+    >
+      {item.name}
+    </MenuItem>
+  ))}
+           </Select>
+              <Typography variant="subtitle1">Date d'inscription :</Typography>
+              <TextField
+                type="date"
+               inputRef={date}
+                className={Styles.input}
+                required
+                fullWidth
+                margin="normal"
+              />
+
+              <Box className={Styles.modalActions} display="flex" gap={2}>
+                <Button  variant="contained" type="submit">
+                  Modifier
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowModalup(null)}
+                  className={Styles.btnAnnuler}
+                >
+                  Annuler
+                </Button>
+              </Box>
+            </form>
+          </Box>
+        </Box>
+      </Modal>
       {/* Modal suppression */}
       <Modal open={idASupprimer !== null} onClose={() => setIdsupprimer(null)}>
         <Box className={Styles.modalOverlay1}>

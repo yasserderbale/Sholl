@@ -1,5 +1,4 @@
 import { createContext, useContext,  useEffect,  useState,  type FC, type PropsWithChildren,  } from "react";
-    
  interface Matiere {
     name:string,
     prix:number
@@ -15,8 +14,8 @@ interface IContext {
         getOneMat:(idMat:any)=>Promise<Matiere>,
         updateone:(idMat:any,name:string,prix:number)=>void,
         getStudentes:()=>void,
-        stude:any
-
+        stude:any,
+        seracheStud:(e:any)=>Promise<any>
     }
     const Authcontext = createContext<IContext>({
         tocken:null,
@@ -29,7 +28,8 @@ interface IContext {
     getOneMat:async()=>({  name: "", prix: 0 }),
     updateone:()=>{},
     getStudentes:()=>{},
-    stude:[]
+    stude:[],
+    seracheStud:async()=>{}
     })
     export const AuthProvider:FC<PropsWithChildren> = ({children})=>{
     const [tocken,settocken] = useState<string | null>(localStorage.getItem("Tocken"))
@@ -60,8 +60,11 @@ interface IContext {
                 setmat(response.data)
                 
             }
-           getMat()
-           },[])
+            if(tocken){
+            getMat()
+                   }
+           
+           },[tocken])
            const addMat  =async (name:string,prix:number)=>{
           if(!name || !prix) {alert("sasir tous les Champs Context")
           return
@@ -150,10 +153,32 @@ interface IContext {
     
   }
   useEffect(()=>{
+    if(tocken){
+getStudentes()
+    }
+    
+  },[tocken])
+  const seracheStud = async(value:any)=>{
+  if(!value) getStudentes()
+  const searchOne = await fetch(`http://localhost:3000/Search?name=${value}`,{
+headers:{
+  "Content-Type":"application/json",
+  "Authorization":`Bearer ${tocken}`
+}
+
+  })
+  if(!searchOne.ok){
     getStudentes()
-  },[])
+  }
+ const response = await searchOne.json()
+ if(!response) {
+  alert(response.data)
+  return
+ }
+ setstud(response.data)
+}
     return (
-        <Authcontext.Provider value={{login,tocken,isAuth,logoute,mat,addMat,DelatewoneMat,getOneMat,updateone,getStudentes,stude}}>
+        <Authcontext.Provider value={{login,tocken,isAuth,logoute,mat,addMat,DelatewoneMat,getOneMat,updateone,getStudentes,stude,seracheStud}}>
             {children}
         </Authcontext.Provider>
     )

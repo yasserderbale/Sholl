@@ -61,7 +61,7 @@ interface Istudsearch{
 }
 export const SearchStudentes=async({identifinate,name}:Istudsearch)=>{
    if (!identifinate) return { StatusCode: 404, data: "ther isn`t identifiante" };
-      if (!name) return { StatusCode: 404, data: "ther isn`t text of searche" };
+    //  if (!name) return { StatusCode: 404, data: "ther isn`t text of searche" };
 
   const getStudent = await Studentemodel.find({
     Name:{$regex:name,$options:"i"}})
@@ -81,10 +81,10 @@ interface Iupdate{
 export const updateStudent=async({identifinate,idStud,Name,Age,Nivuea,Telephone,modules}:Iupdate)=>{
 if(!identifinate) return {StatusCode:404,data:"identinfiante not provide"}
 if(!idStud && !Name  && !Age && !Nivuea && !Telephone && !modules) return {StatusCode:404,data:"Id not valid"}
-const getnameofstud = await Studentemodel.findOne({Name})
-if(getnameofstud) return {StatusCode:404,data:"Name deja exister"}
+// const getnameofstud = await Studentemodel.findOne({Name})
+ // if(getnameofstud) return {StatusCode:404,data:"Name deja exister"}
  const getMatieres = await Promise.all( modules.map(async(Nam)=>{
-const getmatieres = await Matieres.findOne({name:Nam.name})
+const getmatieres = await Matieres.findOne({name:Nam})
 if(!getmatieres)  return null
 
 return {
@@ -115,7 +115,7 @@ return {StatusCode:200,data:"succued delete"}
 export const getStudentesOne=async({identifinate,idStud}:Istud)=>{
 if(!identifinate ) return {StatusCode:404,data:"identinfiante not provide"}
   if(!idStud) return {StatusCode:404,data:"id not provider"}
-  const getOne = await Studentemodel.findById(idStud)
+  const getOne = await Studentemodel.findById(idStud).populate("modules.matid")
   if(!getOne) return {StatusCode:404,data:"failed getOne student"}
   return {StatusCode:200,data:getOne}
 

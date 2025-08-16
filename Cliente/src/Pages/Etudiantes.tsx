@@ -144,13 +144,7 @@ const updatOne = async(e:React.FormEvent)=>{
   getStudentes()  
   setShowModalup(null)
 }
-const hadnlSearch=(e:any)=>{
-  const value = e.target.value
-  if(!value){
-    getStudentes()
-  }
-  seracheStud(value)
-}
+
   return (
     <Box className={Styles.page} p={3}>
       <Typography variant="h4" className={Styles.title} gutterBottom>
@@ -159,7 +153,7 @@ const hadnlSearch=(e:any)=>{
 
       <Box className={Styles.actions} mb={2} display="flex" gap={2}>
         <TextField
-        onChange={hadnlSearch}
+        onChange={(e:any)=>seracheStud(e.target.value)}
           label="Rechercher par nom"
           variant="outlined"
           size="small"
@@ -176,6 +170,7 @@ const hadnlSearch=(e:any)=>{
         </Button>
       </Box>
 
+      {stude.length==0? <h1 >no data</h1>:
       <Paper>
         <Table className={Styles.table}>
           <TableHead>
@@ -208,6 +203,8 @@ const hadnlSearch=(e:any)=>{
           </TableBody>
         </Table>
       </Paper>
+      
+    }
 
       {/* Modal ajout */}
       <Modal open={showModal} onClose={() => setShowModal(false)}>

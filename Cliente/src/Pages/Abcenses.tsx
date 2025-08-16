@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  React, { useEffect, useRef, useState } from "react";
 import styles from "../Styles/Abcenses.module.css";
 import {
   Box,
@@ -13,48 +13,89 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  Select,
+  MenuItem,
+  OutlinedInput,
+  type SelectChangeEvent,
 } from "@mui/material";
-
-interface Absence {
-  id: number;
-  nom: string;
-  date: string;
-  cause: string;
-  Matieres:string
-}
-
+import { usAuth } from "../Context/AuthContext";
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+    },
+  },
+};
 export const Abcenses = () => {
-  const [absences, setAbsences] = useState<Absence[]>([
-    { id: 1, nom: "Yasser", date: "2024-12-01", cause: "Maladie" ,Matieres:"math"},
-    { id: 2, nom: "Fatima", date: "2024-12-05", cause: "Voyage",Matieres:"math" },
-  ]);
-  const [searchNom, setSearchNom] = useState("");
+  const {stude,mat,tocken} = usAuth()
   const [showModal, setShowModal] = useState(false);
-  const [nom, setNom] = useState("");
-  const [date, setDate] = useState("");
-  const [cause, setCause] = useState("");
-  const [Matieres,setMatieres]=useState("")
-
-  const ajouterAbsence = (e: React.FormEvent) => {
-    e.preventDefault();
-    const nouvelleAbsence: Absence = {
-      id: absences.length + 1,
-      nom,
-      date,
-      cause,
-      Matieres
-    };
-    setAbsences([...absences, nouvelleAbsence]);
-    setNom("");
-    setDate("");
-    setCause("");
-    setShowModal(false);
-  };
-
-  const absencesFiltres = absences.filter((a) =>
-    a.nom.toLowerCase().includes(searchNom.toLowerCase())
-  );
-
+  const [idMat,setmodules]=useState<string[]>([])
+  const hadnlModules=(e:SelectChangeEvent<string[]>)=>{
+    const {value} =e.target
+    setmodules(typeof(value)==='string'?value.split(','):value)
+  }
+  const [abcense,setabcense]=useState([])
+  const name = useRef<HTMLInputElement>(null)
+  const date = useRef<HTMLInputElement>(null)
+  const caus = useRef<HTMLInputElement>(null)
+  const Addabcens = async(event:React.FormEvent)=>{
+    event.preventDefault()
+    const idStud = name.current?.value  
+    const Date = date.current?.value
+    const cause = caus.current?.value
+    const Abcense = await fetch(`http://localhost:3000/Abcenses`,{
+      method:"POST",  
+      headers:{
+          "Content-Type":"application/json",
+          "Authorization":`Bearer ${tocken}`
+        },
+        body:JSON.stringify({idStud,Date,cause,idMat})
+    })
+    if(!Abcense.ok){
+      console.log("add failed")
+      return
+    }
+  const response=await Abcense.json()
+    name.current!.value=""
+    date.current!.value=""
+    caus.current!.value=""
+    setmodules([])
+  setShowModal(false)
+  GetAbcense()
+  }
+  const GetAbcense = async()=>{
+    const getabcenses = await fetch("http://localhost:3000/Abcenses",{
+      headers:{
+        "Authorization":`Bearer ${tocken}`
+      }
+    })
+    if(!getabcenses.ok){
+      alert("get failed")
+      return
+    }
+    const response = await getabcenses.json()
+    setabcense(response.data)
+  }
+  useEffect(()=>{
+    if(tocken){
+      GetAbcense()
+    }
+  },[tocken])
+  const Searche = async(event:any)=>{
+    const getOne = await fetch(`http://localhost:3000/SearchAbc?name=${event}`,{
+      headers:{
+        "Authorization":`Bearer ${tocken}`
+      }
+    })
+    if(!getOne.ok){
+      console.log("failed getone")
+      return
+    }
+    const response = await getOne.json()
+    setabcense(response.data)
+  }
   return (
     <Box p={3} className={styles.page}>
       <Typography variant="h4" className={styles.title} gutterBottom>
@@ -62,12 +103,11 @@ export const Abcenses = () => {
       </Typography>
 
       <Box className={styles.actions} mb={2} display="flex" gap={2}>
-        <TextField
+        <TextField  
+        onChange={(e)=>Searche(e.target.value)}
           label="Rechercher par nom"
           variant="outlined"
           size="small"
-          value={searchNom}
-          onChange={(e) => setSearchNom(e.target.value)}
           className={styles.searche}
         />
         <Button
@@ -80,6 +120,8 @@ export const Abcenses = () => {
         </Button>
       </Box>
 
+    {abcense.length==0?
+    <h1>No date</h1>:
       <Paper>
         <TableContainer>
           <Table className={styles.table}>
@@ -92,61 +134,78 @@ export const Abcenses = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {absencesFiltres.map((abs) => (
-                <TableRow key={abs.id}>
-                  <TableCell>{abs.nom}</TableCell>
-                  <TableCell>{abs.date}</TableCell>
-                  <TableCell>{abs.cause}</TableCell>
-                  <TableCell>{abs.Matieres}</TableCell>
-                </TableRow>
-              ))}
+        {abcense.map((item:any)=>(
+          <TableRow>
+            <TableCell>{item.idStud.Name}</TableCell>
+            <TableCell>{item.Abcenses.map((abcens:any)=>abcens.Date.split("T")[0])}</TableCell>
+            <TableCell>{item.Abcenses.map((abcens:any)=>abcens.cause)}</TableCell>
+          </TableRow>
+          ))}
+
+              
             </TableBody>
           </Table>
         </TableContainer>
-      </Paper>
+      </Paper>  
+  }
 
       {/* Modal d'ajout */}
-      <Modal open={showModal} onClose={() => setShowModal(false)}>
+      <Modal  open={showModal} onClose={() => setShowModal(false)}>
         <Box className={styles.modalOverlay}>
           <Box className={styles.modalContent}>
             <Typography variant="h6" className={styles.titre} gutterBottom>
               Ajouter une absence
             </Typography>
-            <form onSubmit={ajouterAbsence} className={styles.form}>
+            <form onSubmit={Addabcens} className={styles.form}>
+              <Typography>
+                 Eleve
+                </Typography>
+                <Select 
+                inputRef={name}
+                sx={{width:"100%"}}
+                  labelId="demo-multiple-chip-label"
+                    id="demo-multiple-chip"
+                     input={<OutlinedInput id="select-single" />}
+                >
+                  
+                  {stude.map((eleve:any)=>(
+                    <MenuItem key={eleve._id} value={eleve._id}>{eleve.Name}</MenuItem>
+                  ))}
+                </Select>
               <TextField
-                label="Nom de l'élève"
-                value={nom}
-                onChange={(e) => setNom(e.target.value)}
-                required
-                fullWidth
-                margin="normal"
-              />
-              <TextField
+              inputRef={date}
                 label="Date d'absence"
                 type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
                 required
                 fullWidth
                 InputLabelProps={{ shrink: true }}
                 margin="normal"
               />
               <TextField
+              inputRef={caus}
                 label="Cause"
-                value={cause}
-                onChange={(e) => setCause(e.target.value)}
                 required
                 fullWidth
                 margin="normal"
               />
-              <TextField
-                label="Matieres"
-                value={cause}
-                onChange={(e) => setCause(e.target.value)}
-                required
-                fullWidth
-                margin="normal"
-              />
+              <Typography>
+               modules
+              </Typography>
+                <Select
+                sx={{width:"100%"}}
+                    labelId="demo-multiple-chip-label"
+                    id="demo-multiple-chip"
+                    multiple 
+                    onChange={hadnlModules}
+                    value={idMat}
+                    input={<OutlinedInput id="select-multiple-chip" label="Modules" />}
+                    MenuProps={MenuProps}
+                >  
+                  {mat.map((name)=>(
+                    <MenuItem value={name._id} key={name._id}>{name.name}</MenuItem>
+                  ))}
+                </Select>
+              
               <Box className={styles.modalActions} display="flex" gap={2}>
                 <Button variant="contained" type="submit">
                   Enregistrer

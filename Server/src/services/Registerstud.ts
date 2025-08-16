@@ -64,7 +64,7 @@ export const SearchStudentes=async({identifinate,name}:Istudsearch)=>{
     //  if (!name) return { StatusCode: 404, data: "ther isn`t text of searche" };
 
   const getStudent = await Studentemodel.find({
-    Name:{$regex:name,$options:"i"}})
+    Name:{$regex:name,$options:"i"}}).populate("modules.matid")
 if(!getStudentes) return{StatusCode:404,data:"can`t dearche student"}
 return { StatusCode: 200, data: getStudent };
 }

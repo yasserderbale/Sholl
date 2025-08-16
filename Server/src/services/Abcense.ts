@@ -39,3 +39,16 @@ const getAbc = await Abcensesmodel.find().populate("idStud").populate("Abcenses.
 if(!getAbc) return {StatusCode:404,data:"conot get information of studentes "}
 return {StatusCode :200,data:getAbc}
 }
+interface searchAbc{
+      identifaite:string,
+      search:any
+}
+export const SearchAbcense=async({identifaite,search}:searchAbc)=>{
+   if(!identifaite) return {StatusCode:402,data:"identifiante not provider"}
+   let gestAbc = await Abcensesmodel.find().populate({path:"idStud",
+    match:{Name:{$regex:search,$options:"i" }}}).populate("Abcenses.matieres.idMat")
+    gestAbc = gestAbc.filter((name)=>name.idStud!=null)
+   if(!gestAbc) return{StatusCode:404,data:'no data from searche'}
+   return{StatusCode:200,data:gestAbc}
+
+}

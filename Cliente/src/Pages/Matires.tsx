@@ -129,9 +129,9 @@ export function Matires() {
         <MenuItem value={"Science"}>Science</MenuItem>
         <MenuItem value={"Français"}>Français</MenuItem>
         <MenuItem value={"Anglais"}>Anglais</MenuItem>
-        <MenuItem value={"Anglais"}>Espagnole</MenuItem>
+        <MenuItem value={"Espagnole"}>Espagnole</MenuItem>
         <MenuItem value={"Italie"}>Italie</MenuItem>
-
+        <MenuItem value={"Italie"}>Filaue</MenuItem>
 
 
         

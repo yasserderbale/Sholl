@@ -77,10 +77,6 @@ interface IContext {
       },
       body:JSON.stringify({name,prix})
     })
-    if(!data.ok){
-      alert("saiser imposssible")
-      return
-    }
     const response = await data.json()
     if(response.StatusCode!==200) {
       alert(response.data)

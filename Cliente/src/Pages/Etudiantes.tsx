@@ -34,6 +34,8 @@ const MenuProps = {
 };
 export function Etudiantes() {
    const [modules, setModules] = useState<string[]>([]);
+   const [selectedStudent,setSelectedStudent]=useState<any>(null)
+   console.log(selectedStudent)
  const handleChangeModules = (event: SelectChangeEvent<string[]>) => {
   const {value} = event.target
   setModules(typeof(value)==='string'? value.split(','):value)
@@ -150,7 +152,6 @@ const updatOne = async(e:React.FormEvent)=>{
       <Typography variant="h4" className={Styles.title} gutterBottom>
         Gestion des élèves
       </Typography>
-
       <Box className={Styles.actions} mb={2} display="flex" gap={2}>
         <TextField
         onChange={(e:any)=>seracheStud(e.target.value)}
@@ -192,11 +193,11 @@ const updatOne = async(e:React.FormEvent)=>{
               <TableCell>{item.Nivuea}</TableCell>
               <TableCell>{item.Telephone}</TableCell>
               <TableCell>{item.modules.map((modul:any)=>modul.matid.name).join(",")}</TableCell>
-              <TableCell>{item.Date}</TableCell>
-              <TableCell>
-                <Button onClick={()=>{setShowModalup(item._id);getOneStud(item._id)}} startIcon={<Update />}></Button>
-                <Button onClick={()=>setIdsupprimer(item._id)} startIcon={<DeleteIcon />}></Button>
-                <Button  startIcon={<VisibilityIcon />}></Button>
+              <TableCell>{item.Date.split("T")[0]}</TableCell>
+              <TableCell sx={{display:"flex",gap:"4px"}}>
+                <Button  onClick={()=>{setShowModalup(item._id);getOneStud(item._id)}} startIcon={<Update />}>Modifier</Button>
+                <Button  onClick={()=>setIdsupprimer(item._id)} startIcon={<DeleteIcon />}>Supprimer</Button>
+                <Button  onClick={()=> setSelectedStudent(item)}  startIcon={<VisibilityIcon />}>Voir</Button>
               </TableCell>
             </TableRow>
           ))}
@@ -205,7 +206,47 @@ const updatOne = async(e:React.FormEvent)=>{
       </Paper>
       
     }
-
+    {/* Modal Selectioner */}
+    <Modal open={!!selectedStudent} onClose={()=>setSelectedStudent(null)}>
+      <Box className={Styles.modalOverlay}>
+        <Box className={Styles.modalContent} sx={{maxWidth:"730px",maxHeight:"200px"}}>
+        <Typography>Detailles de {selectedStudent?.Name}</Typography>
+       {selectedStudent && (
+                     <Table>
+                       <TableHead>
+                         <TableRow>
+                           <TableCell>Nom</TableCell>
+                           <TableCell>Âge</TableCell>
+                           <TableCell>Niveau</TableCell>
+                           <TableCell>Téléphone</TableCell>
+                           <TableCell>Date d'inscription</TableCell>
+                           <TableCell>Modules</TableCell>
+                         </TableRow>
+                       </TableHead>
+                       <TableBody>
+                        <TableRow>
+                          <TableCell>{selectedStudent.Name}</TableCell>
+                          <TableCell>{selectedStudent.Age}</TableCell>
+                          <TableCell>{selectedStudent.Nivuea}</TableCell>
+                          <TableCell>{selectedStudent.Telephone}</TableCell>
+                          <TableCell>{selectedStudent.Date.split("T")[0]}</TableCell>
+                          <TableCell>{selectedStudent.modules.map((name:any)=>name.matid.name).join(",")}</TableCell>
+                        </TableRow>
+                       </TableBody>
+                     </Table>
+                   )}
+       
+                   <Box mt={2} display="flex" justifyContent="flex-end">
+                     <Button
+                       variant="outlined"
+                       onClick={() => setSelectedStudent(null)}
+                     >
+                       Fermer
+                     </Button>
+                   </Box>
+        </Box>
+      </Box>
+    </Modal>
       {/* Modal ajout */}
       <Modal open={showModal} onClose={() => setShowModal(false)}>
         <Box className={Styles.modalOverlay}>
@@ -247,7 +288,6 @@ const updatOne = async(e:React.FormEvent)=>{
                 fullWidth
                 margin="normal"
               />
-
               <Typography variant="subtitle1">Modules :</Typography>
            <Select
    labelId="demo-multiple-chip-label"

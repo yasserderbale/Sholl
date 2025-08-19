@@ -33,7 +33,7 @@ export const Abcenses = () => {
   const { stude, mat, tocken } = usAuth();
   const [showModal, setShowModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null); // 👈 طالب واحد مختار
-  const [idMat, setmodules] = useState<string[]>([]);
+  const [idMat, setmodules] = useState<string[]>([]); 
   const hadnlModules = (e: SelectChangeEvent<string[]>) => {
     const { value } = e.target;
     setmodules(typeof value === "string" ? value.split(",") : value);

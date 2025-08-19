@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import  {  useState } from 'react';
 import Styles from '../Styles/Paimentes.module.css';
-
 import {
   Box,
   Typography,
@@ -13,89 +12,44 @@ import {
   TableBody,
   Paper,
   Modal,
+  Select,
+  MenuItem,
+  OutlinedInput,
+  type SelectChangeEvent,
   
 } from '@mui/material';
-
-interface Paiement {
-  id: number;
-  eleve: string;
-  matiere: string;
-  mois: string;
-  montant: number;
-  date: string;
-  methode: string;
-  statut: 'Payé' | 'Non payé';
-  notes?: string;
-}
-
+import { usAuth } from '../Context/AuthContext';
 export function Paimentes() {
-  const [paiements, setPaiements] = useState<Paiement[]>([
-    {
-      id: 1,
-      eleve: 'Ahmed',
-      matiere: 'Maths',
-      mois: 'Janvier',
-      montant: 2000,
-      date: '2025-07-05',
-      methode: 'Cash',
-      statut: 'Payé',
-      notes: 'Paiement comptant',
-    },
-  ]);
-
   const [showModal, setShowModal] = useState(false);
-
-  const [eleve, setEleve] = useState('');
-  const [matiere, setMatiere] = useState('');
-  const [mois, setMois] = useState('');
-  const [montant, setMontant] = useState<number | ''>('');
-  const [datePaiement, setDatePaiement] = useState('');
-  const [methode, setMethode] = useState('Cash');
-  const [notes, setNotes] = useState('');
-
-  const [search, setSearch] = useState('');
-
-  const ajouterPaiement = (e: React.FormEvent) => {
-    e.preventDefault();
-    const nouveau: Paiement = {
-      id: paiements.length + 1,
-      eleve,
-      matiere,
-      mois,
-      montant: Number(montant),
-      date: datePaiement,
-      methode,
-      statut: 'Payé',
-      notes,
-    };
-    setPaiements([...paiements, nouveau]);
-    setEleve('');
-    setMatiere('');
-    setMois('');
-    setMontant('');
-    setDatePaiement('');
-    setMethode('Cash');
-    setNotes('');
-    setShowModal(false);
-  };
-
-  const paiementsFiltres = paiements.filter((p) =>
-    p.eleve.toLowerCase().includes(search.toLowerCase())
-  );
-
+  const {stude} = usAuth()
+const Mois = ['janvier','fevrier','marse','avrile','mey','joine','juillet','aute','september','october','november','december']
+const [modlesStud,setmodlesStud]=useState({})
+  let modelsSelect = (modlesStud.modules?.map((name:any)=>name.matid))
+  console.log(modelsSelect)
+const [mois,setmois]=useState<any>([])
+const [montante,setmontante]=useState(0)
+const hadnlMois =(e:SelectChangeEvent<any[]>)=>{
+ const {value} = e.target 
+ setmois(value)
+}
+const [models,setmodles] = useState<any[]>([])
+const handlModels = (e:SelectChangeEvent<any>)=>{
+   const {value} = e.target 
+   setmodles(typeof(value)==="string"? value.split(","):value)
+}
+let somme=models.reduce((curr,next)=>{
+    return (curr+next.prix)
+  },0)  
   return (
     <Box className={Styles.page} p={3}>
       <Typography variant="h4" gutterBottom className={Styles.title}>
         Gestion des paiements
       </Typography>
-
       <Box className={Styles.actions} display="flex" gap={2} mb={2}>
         <TextField
           label="Rechercher par élève"
           variant="outlined"
           size="small"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
           className={Styles.input}
         />
         <Button
@@ -123,103 +77,123 @@ export function Paimentes() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {paiementsFiltres.map((p) => (
-              <TableRow key={p.id}>
-                <TableCell>{p.eleve}</TableCell>
-                <TableCell>{p.matiere}</TableCell>
-                <TableCell>{p.mois}</TableCell>
-                <TableCell>{p.montant} DA</TableCell>
-                <TableCell>{p.date}</TableCell>
-                <TableCell>{p.methode}</TableCell>
-                <TableCell>{p.statut}</TableCell>
-                <TableCell>{p.notes}</TableCell>
-              </TableRow>
-            ))}
           </TableBody>
         </Table>
       </Paper>
 
       <Modal open={showModal} onClose={() => setShowModal(false)}>
         <Box className={Styles.modalOverlay}>
-          <Box className={Styles.modalContent}>
+          <Box className={Styles.modalContent} >
             <Typography variant="h6" className={Styles.titre}>
               Ajouter Paiement
             </Typography>
-            <form onSubmit={ajouterPaiement} className={Styles.form}>
-              <TextField
-                label="Nom élève"
-                value={eleve}
-                onChange={(e) => setEleve(e.target.value)}
-                className={Styles.input}
-                required
-                fullWidth
-                margin="normal"
-              />
+           <form className={Styles.form}>
+  {/* Eleve */}
+  <Typography>Élève</Typography>
+  <Select
+  onChange={(e:any)=>setmodlesStud(e.target.value)}
+    label="Nom élève"
+    input={<OutlinedInput id="select-single"  />}
+    required
+  >
+    {stude.map((name: any) => (
+      <MenuItem key={name._id} value={name}>
+        {name.Name}
+      </MenuItem>
+    ))}
+  </Select>
 
-              <TextField
-                label="Matière"
-                value={matiere}
-                onChange={(e) => setMatiere(e.target.value)}
-                className={Styles.input}
-                required
-                fullWidth
-                margin="normal"
-              />
+  {/* Modules + Prix */}
+  <Typography>Modules</Typography>
+  <Box display="flex" alignItems="center" justifyContent="space-between" gap={2}>
+    <Select
+      onChange={handlModels}
+      value={models}
+      multiple
+      sx={{ flex: 1 }}
+      input={<OutlinedInput id="select-multiple-chip" />}
+    >
+      {modelsSelect?.map((name:any) => (
+          <MenuItem key={name._id} value={name}>{name.name}</MenuItem>
+      ))}
+    </Select>
 
-              <TextField
-                label="Mois"
-                value={mois}
-                onChange={(e) => setMois(e.target.value)}
-                className={Styles.input}
-                required
-                fullWidth
-                margin="normal"
-              />
+    {/* Prix total */}
+    <Box
+      sx={{
+        minWidth: "180px",
+        p: 1.5,
+        borderRadius: "8px",
+        bgcolor: "#f0fdf4",
+        border: "1px solid #22c55e",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 1,
+      }}
+    >
+      <Typography sx={{ color: "#16a34a", fontWeight: "bold" }}>
+        💰  {(somme*mois?.length || somme*1)-montante} DA
+      </Typography>
+    </Box>
+  </Box>
 
-              <TextField
-                label="Montant"
-                type="number"
-                value={montant}
-                onChange={(e) => setMontant(Number(e.target.value))}
-                className={Styles.input}
-                required
-                fullWidth
-                margin="normal"
-              />
+  {/* Mois */}
+  <Typography>Mois</Typography>
+  <Select
+    onChange={hadnlMois}
+    value={mois}
+    multiple
+    input={<OutlinedInput id="select-multiple-chip" />}
+  >
+    {Mois.map((mois) => (
+      <MenuItem sx={{ height: "29px" }} key={mois} value={mois}>
+        {mois}
+      </MenuItem>
+    ))}
+  </Select>
 
-             
+  {/* Montant */}
+  <TextField
+    label="Montant"
+    type="number"
+    onChange={(e:any)=>setmontante(e.target.value)}
+    className={Styles.input}
+    required
+    fullWidth
+    margin="normal"
+  />
 
-              <TextField
-                label="Date de paiement"
-                type="date"
-                value={datePaiement}
-                onChange={(e) => setDatePaiement(e.target.value)}
-                className={Styles.input}
-                required
-                fullWidth
-                margin="normal"
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
+  {/* Date */}
+  <TextField
+    label="Date de paiement"
+    type="date"
+    className={Styles.input}
+    required
+    fullWidth
+    margin="normal"
+    InputLabelProps={{
+      shrink: true,
+    }}
+  />
 
-             
-              <Box className={Styles.modalActions} display="flex" gap={2}>
-                <Button
-                  variant="contained"
-                  type="submit"
-                  className={Styles.btnConfirmer}
-                >
-                  Enregistrer
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={() => setShowModal(false)}
-                  className={Styles.btnAnnuler}
-                >
-                  Annuler
-                </Button>
-              </Box>
+  {/* Buttons */}
+  <Box className={Styles.modalActions} display="flex" gap={2}>
+    <Button
+      variant="contained"
+      type="submit"
+      className={Styles.btnConfirmer}
+    >
+      Enregistrer
+    </Button>
+    <Button
+      variant="outlined"
+      onClick={() => setShowModal(false)}
+      className={Styles.btnAnnuler}
+    >
+      Annuler
+    </Button>
+  </Box>
             </form>
           </Box>
         </Box>

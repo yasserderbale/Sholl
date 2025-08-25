@@ -56,16 +56,12 @@
   background: #2563eb;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
+.table th {
+  background: #f3f4f6; /* Header رمادي فاتح */
+  font-weight: bold;
 }
-
-.table th,
-.table td {
-  border: 1px solid #e5e7eb;
-  padding: 12px;
-  text-align: left;
+.table tr:hover {
+  background: #f9fafb; /* خفيف بزاف */
 }
 .form input:focus {
      border-color: #2563eb; /* أزرق عند التركيز */
@@ -100,6 +96,13 @@
   padding: 30px;
   border-radius: 8px;
   max-width: 680px;
+  width: 100%;
+}
+.modalContentD {
+  background: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  max-width: 880px;
   width: 100%;
 }
 

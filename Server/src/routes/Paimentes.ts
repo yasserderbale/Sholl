@@ -17,7 +17,6 @@ route.put("/Paimentes/:idStud/complete/:idPaiment",validatejwt,async(req,res)=>{
 const identifiante = (req as any).payload
 const {idStud,idPaiment} = req.params
 const  {addPrice} = req.body
-
   if ( isNaN(addPrice)) {
     return res.status(400).json({ StatusCode: 400, data: "Invalid additional amount" });
   }

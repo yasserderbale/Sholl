@@ -91,7 +91,7 @@ interface IPaimente {
 export const getOnePaimente=async ({identifiante,idStud}:IPaimente)=>{
 if(!identifiante) return {StatusCode:404,data:"failed check tocken "}
 if(!idStud) return {StatusCode:404,data:"req of student check Student "}
-const getOneStudent =await paimentesModel.findOne({idStud})
+const getOneStudent =await paimentesModel.findOne({idStud}).populate("idStud")
 if(!getOneStudent) return {StatusCode:404,data:"failed check Student "}
 return {StatusCode:200,data:getOneStudent}
 

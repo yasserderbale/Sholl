@@ -35,8 +35,7 @@ const MenuProps = {
 export function Etudiantes() {
    const [modules, setModules] = useState<string[]>([]);
    const [selectedStudent,setSelectedStudent]=useState<any>(null)
-   console.log(selectedStudent)
- const handleChangeModules = (event: SelectChangeEvent<string[]>) => {
+   const handleChangeModules = (event: SelectChangeEvent<string[]>) => {
   const {value} = event.target
   setModules(typeof(value)==='string'? value.split(','):value)
  };
@@ -112,7 +111,8 @@ const remove = await fetch(`http://localhost:3000/Student/${idASupprimer}`,{
     "Authorization":`Bearer ${tocken}`
   }
 })
-if(!remove.ok){
+const response = await remove.json()
+if(response.StatusCode!=200){
   alert("Deleted failed")
   return
 }

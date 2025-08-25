@@ -95,7 +95,7 @@ export function Matires() {
          {(mat??[]).map((items)=>(
       <TableRow key={items._id}>
         <TableCell>{items.name}</TableCell>
-                <TableCell>{items.prix}</TableCell>
+                <TableCell>{items.prix}.00DA</TableCell>
                 <TableCell><Button onClick={()=>hadndlgetOne(items._id)} startIcon={<UpdateIcon/>}>Modifier</Button>
                 <Button onClick={()=>setIdASupprimer(items._id)} startIcon={<DeleteForeverIcon/>}>Supprimer</Button>
                  </TableCell>
@@ -113,7 +113,7 @@ export function Matires() {
             <Typography variant="h6" className={Styles.titre}>
               Ajouter une matière
             </Typography>
-           <form onSubmit={hadndleAdd}  >
+           <form onSubmit={hadndleAdd}  > 
              <FormControl className={Styles.form}>
               <Select inputRef={matref}
         labelId="demo-select-small-label"
@@ -131,7 +131,7 @@ export function Matires() {
         <MenuItem value={"Anglais"}>Anglais</MenuItem>
         <MenuItem value={"Espagnole"}>Espagnole</MenuItem>
         <MenuItem value={"Italie"}>Italie</MenuItem>
-        <MenuItem value={"Italie"}>Filaue</MenuItem>
+        <MenuItem value={"Filaue"}>Filaue</MenuItem>
 
 
         

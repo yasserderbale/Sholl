@@ -1,4 +1,6 @@
+import { Abcensesmodel } from "../models/Abcenses";
 import { Matieres } from "../models/Matieres";
+import { paimentesModel } from "../models/Paimentes";
 import { Studentemodel } from "../models/Student";
 
 interface Ident {
@@ -22,7 +24,6 @@ export const Registerstud =async ({
   if (!identifinate)
     return { StatusCode: 401, data: "ther isn`t identifiante" };
   if (!Name || !Age || !Nivuea || !Telephone || !modules.length || !Date) return { StatusCode: 501, data: "you have insert all informations" };
-  console.log(modules)
   const getnamOfStundets = await Studentemodel.findOne({Name})
   if(getnamOfStundets) return { StatusCode: 404, data: "studentes already exist " };
 
@@ -36,7 +37,6 @@ export const Registerstud =async ({
     })
   )
   if(!Allmodel) return {StatusCode:404,data:"ther isn`t model "}
-        console.log(Allmodel)
 
   const newStudent = await Studentemodel.create({
     Name,Age,Nivuea,Telephone,modules:Allmodel,Date
@@ -68,7 +68,6 @@ export const SearchStudentes=async({identifinate,name}:Istudsearch)=>{
 if(!getStudentes) return{StatusCode:404,data:"can`t dearche student"}
 return { StatusCode: 200, data: getStudent };
 }
-
 interface Iupdate{
   identifinate:string,
   idStud:string,
@@ -107,10 +106,11 @@ export const DeletStudents=async({identifinate,idStud}:Istud)=>{
   if(!identifinate ) return {StatusCode:404,data:"identinfiante not provide"}
   if(!idStud) return {StatusCode:404,data:"id not provider"}
 const Deletone = await Studentemodel.findByIdAndDelete(idStud)
-if(!Deletone) return {StatusCode:404,data:"failed delete"}
+ const DeleteAbcenses = await Abcensesmodel.findOneAndDelete({idStud:idStud})
+ const DeletePaimentes = await paimentesModel.findOneAndDelete({idStud:idStud})
+ console.log("hado te3 supprimer",DeleteAbcenses,DeletePaimentes,Deletone)
+if(Deletone==null && DeleteAbcenses==null && DeletePaimentes==null) return {StatusCode:404,data:"failed delete"}
 return {StatusCode:200,data:"succued delete"}
-
-
 }
 export const getStudentesOne=async({identifinate,idStud}:Istud)=>{
 if(!identifinate ) return {StatusCode:404,data:"identinfiante not provide"}

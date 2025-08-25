@@ -45,29 +45,15 @@
   border-color: #2563eb;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
 .table th {
-  background-color: #f9fafb;
-  color: #374151;
+  background: #f3f4f6; /* Header رمادي فاتح */
   font-weight: bold;
-  padding: 12px;
-  border-bottom: 2px solid #e5e7eb;
 }
-
-.table td {
-  padding: 12px;
-  border-bottom: 1px solid #e5e7eb;
-  color: #4b5563;
-}
-
 .table tr:hover {
-  background-color: #f3f4f6;
+  background: #f9fafb; /* خفيف بزاف */
 }
+
+
 
 .actions {
   display: flex;

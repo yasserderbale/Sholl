@@ -46,7 +46,7 @@ export const Abcenses = () => {
     if (tocken) {
       GetAbcense();
     }
-  },[tocken] );
+  },[] );
   // 📌 Get absences
   const GetAbcense = async () => {
     const getabcenses = await fetch("http://localhost:3000/Abcenses", {
@@ -147,7 +147,7 @@ export const Abcenses = () => {
               <TableBody>
                 {(abcense??[]).map((item: any) => (
                   <TableRow key={item._id}>
-                    <TableCell>{item.idStud.Name}</TableCell>
+                    <TableCell>{item.idStud?.Name ?item.idStud.Name:"Eleve supprimer"}</TableCell>
                     <TableCell>{item.Abcenses.length}</TableCell>
                     <TableCell>
                       <Button

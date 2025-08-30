@@ -1,16 +1,20 @@
 .dashboard {
   padding: 30px;
-  width: 80%;
+  width: 80%; /* خليتها full width باش تكون responsive */
+  max-width: 1200px;
+  margin: auto;
 }
 
 .title {
   font-size: 28px;
   font-weight: bold;
+  color: #1e293b; /* لون داكن أنيق */
+  margin-bottom: 20px;
 }
 
 .cardsContainer {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* أكثر responsive */
   gap: 20px;
   margin-bottom: 40px;
 }
@@ -20,19 +24,33 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.card h2 {
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card h2,
+.card h6 {
   font-size: 16px;
   color: #1e3a8a;
-  margin-bottom: 8px;
+  margin: 0;
+  text-align: center;
 }
 
-.card p {
-  font-size: 24px;
+.card p,
+.card h4 {
+  font-size: 22px;
   font-weight: bold;
   color: #111827;
+  margin: 0;
 }
 
 .graphContainer {
@@ -40,7 +58,7 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .graphPlaceholder {
@@ -51,4 +69,6 @@
   justify-content: center;
   color: #6b7280;
   margin-top: 20px;
+  border-radius: 8px;
+  font-size: 14px;
 }

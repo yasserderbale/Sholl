@@ -17,12 +17,13 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 19px;
+  gap: 33px;
+  margin: auto;
+  width: 96%;
 }
 
 .form input {
-  
-  padding:  17px;
+  padding-top: -34px;
   border: 1px solid #d1d5db; /* لون رمادي فاتح */
   border-radius: 6px;
   font-size: 15px;
@@ -31,7 +32,6 @@
 }
 
 .input {
-  padding: 10px 14px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 15px;
@@ -59,6 +59,7 @@
 .table th {
   background: #f3f4f6; /* Header رمادي فاتح */
   font-weight: bold;
+  
 }
 .table tr:hover {
   background: #f9fafb; /* خفيف بزاف */
@@ -102,7 +103,7 @@
   background: #fff;
   padding: 30px;
   border-radius: 8px;
-  max-width: 880px;
+  max-width: 930px;
   width: 100%;
 }
 

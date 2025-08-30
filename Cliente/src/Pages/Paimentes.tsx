@@ -35,6 +35,10 @@ const [color,setcolor]= useState<any>("")
 const [getpaimentes,setgetpaimentes]=useState([])
 const [modalPaimetes,setmodalPaimetes]=useState<any>(null)
 const [onPaimentsget,setonPaimentsget]=useState<any>({})
+const [completepaymodal,setcompletepaymodal]=useState(false)
+const [idstudent,setidstudent]=useState(null)
+const [idpaimente,setidpaimente]=useState(null)
+console.log("hadi ta3 studente",idstudent,"hadi ta3 paimente",idpaimente)
 const hadnlMois =(e:SelectChangeEvent<any[]>)=>{
  const {value} = e.target 
  setmois(value)
@@ -114,14 +118,17 @@ const GetPaimentes = async ()=>{
     alert(response.data)
     return
   }
-  console.log(response.data)
   setgetpaimentes(response.data)
 }
 useEffect(()=>{
   GetPaimentes()
 },[])
-const GetOnestudePaim = async(id:any)=>{
-  const getStudents = await fetch(`http://localhost:3000/Paimentes/${id}`,{
+const GetOnestudePaim = async (idPaiment:any,idStud:any)=>{
+  if(!idPaiment || !idStud) {
+    alert("not founf idpai and idStudente")
+    return
+  }
+  const getStudents = await fetch(`http://localhost:3000/Paimentes/${idStud}/${idPaiment}`,{
     "headers":{
       "Authorization":`Bearer ${tocken}`
     }
@@ -132,7 +139,50 @@ const GetOnestudePaim = async(id:any)=>{
     return
   }
   setonPaimentsget(response.data)
+  setcompletepaymodal(true)
+  setidstudent(idStud)
+  setidpaimente(idPaiment)
 }
+const completepayeer = async(event:React.FormEvent)=>{
+  event.preventDefault()
+  const addPrice = valPrice.current?.value
+  console.log('value of price',addPrice)
+  if(!addPrice) {
+    alert("there isn`t value of price")
+    return
+  }
+   if(!idstudent || !idpaimente) {
+    alert("there isn`t value of idstudent or idpaimente")
+    return
+  }
+  const complete = await fetch(`http://localhost:3000/Paimentes/${idstudent}/complete/${idpaimente}`,{
+    method:"PUT",
+    headers:{
+      "Authorization":`Bearer ${tocken}`,
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({addPrice})
+  })
+  const response = await complete.json()
+  if(!response){
+    alert(response.data)
+    return
+  }
+  setcompletepaymodal(false)
+  setmodalPaimetes(false)
+  GetPaimentes()
+}
+const SearchePai = async(search:any)=>{
+  const searchStudPai = await fetch(`http://localhost:3000/PaimentesSearch?nam=${search}`,{
+    headers:{
+      "Authorization":`Bearer ${tocken}`
+    } 
+  })
+  const response = await searchStudPai.json()
+  setgetpaimentes(response.data)
+  
+}
+const valPrice = useRef<any>(null)
   return (
     <Box className={Styles.page} p={3}>
       <Typography variant="h4" gutterBottom className={Styles.title}>
@@ -140,6 +190,7 @@ const GetOnestudePaim = async(id:any)=>{
       </Typography>
       <Box className={Styles.actions} display="flex" gap={2} mb={2}>
         <TextField
+        onChange={(e:any)=>{SearchePai(e.target.value)}}
           label="Rechercher par élève"
           variant="outlined"
           size="small"
@@ -154,8 +205,11 @@ const GetOnestudePaim = async(id:any)=>{
           ➕ Ajouter Paiement
         </Button>
       </Box>
+      
+      {getpaimentes.length ==0 ?
+    <h1>No data</h1>  :
       <Paper> 
-       <TableContainer>
+  <TableContainer>
          <Table className={Styles.table}>
           <TableHead>
             <TableRow>
@@ -166,7 +220,7 @@ const GetOnestudePaim = async(id:any)=>{
           </TableHead>
           <TableBody>
             {getpaimentes.map((item:any)=>(
-               <TableRow>
+               <TableRow key={item._id}>
                 <TableCell>{item.idStud.Name}</TableCell>
                 <TableCell>{item.paimentes.length}</TableCell>
                 <TableCell>
@@ -183,7 +237,9 @@ const GetOnestudePaim = async(id:any)=>{
           </TableBody>
         </Table>
        </TableContainer>
-      </Paper>
+       </Paper>
+    }
+      
       {/**Modal pour ajouter */}
       <Modal open={showModal} onClose={() => setShowModal(false)}>
         <Box className={Styles.modalOverlay}>
@@ -191,7 +247,7 @@ const GetOnestudePaim = async(id:any)=>{
             <Typography variant="h6" className={Styles.titre}>
               Ajouter Paiement
             </Typography>
-           <form onSubmit={sendData} className={Styles.form}>
+    <form onSubmit={sendData} className={Styles.form}>
   {/* Eleve */}
   <Typography>Élève</Typography>
   <Select 
@@ -314,24 +370,26 @@ const GetOnestudePaim = async(id:any)=>{
             </Typography>
             <Table>
               <TableHead>
-                <TableRow>
+                <TableRow >
                  <TableCell>Modules Paiees</TableCell>
                  <TableCell>Date Paiees</TableCell>
                  <TableCell>Mounth Paiees</TableCell>
-                 <TableCell>Status</TableCell>
+                 <TableCell>Montante</TableCell>
+                 <TableCell sx={{textAlign:'center'}}>Status</TableCell>
                  <TableCell>Action</TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody>
+              <TableBody> 
                {modalPaimetes?.paimentes?.map((Items:any)=>( 
-                <TableRow>
+                <TableRow key={Items._id}>
                   <TableCell>{Items.matieres.map((name:any)=>name.idMat.name).join(",")}</TableCell>
                   <TableCell>{Items.Date.split("T")[0]}</TableCell>
                   <TableCell>{Items.Mois.map((mounth:any)=>mounth).join(",")}</TableCell>
+                  <TableCell>{Items.Montante}</TableCell>
                   <TableCell>{typeof(Items.status)=="number"? `il reste ${Items.status}.00 DA`: Items.status  }</TableCell>
-                  <TableCell>{typeof(Items.status)=="number"?<Button onClick={()=>GetOnestudePaim(modalPaimetes.idStud._id)} variant="outlined">Completer payees</Button>:""}</TableCell>
+                  <TableCell>{typeof(Items.status)=="number"?<Button onClick={()=>GetOnestudePaim(Items._id,modalPaimetes.idStud._id)}  variant="outlined">Completer payees</Button>:""}</TableCell>
                 </TableRow>
-               ))}
+              ))}
               </TableBody>
             </Table>
             <Box mt={2} display="flex" justifyContent="flex-end">
@@ -344,6 +402,33 @@ const GetOnestudePaim = async(id:any)=>{
             </Box>
           </Box>
         </Box>
+      </Modal>
+      {/* Modal pour contenuier le reste paymentes */}
+      <Modal open={completepaymodal} onClose={()=>setcompletepaymodal(false)}>
+               <Box className={Styles.modalOverlay}>
+                <Box className={Styles.modalContent} >
+                  <form onSubmit={completepayeer} className={Styles.form} >
+                       <Typography sx={{marginBottom:'-4px'}} variant="h6"gutterBottom>
+                         Entrer le Reste Argente
+                       </Typography>
+                        <TextField
+                        inputRef={valPrice}
+                    type='number'
+                    className={Styles.input}
+                     label="Entrer Le Reste argente"
+                     required
+                     fullWidth
+                     margin="normal"
+                    />
+                  <Box sx={{display:'flex',justifyContent:'space-between'}}>
+                      <Button variant='outlined' onClick={()=>setcompletepaymodal(false)}>Fermer</Button>
+                     <Button type='submit' variant='outlined'>Submit</Button>
+                  </Box>
+                  </form>
+                  
+                </Box>
+                  
+               </Box>
       </Modal>
     </Box>
   );

@@ -4,8 +4,9 @@ import { validatejwt } from '../medallware/ValidateJWT'
 const route=express.Router()
 route.post("/Student",validatejwt,async(req,res)=>{    
     const identifinate=(req as any).payload
-    const {Name,Age,Nivuea,Telephone,modules,Date}=req.body
-    const response=await Registerstud({identifinate,Name,Age,Nivuea,Telephone,modules,Date})
+    const {Name,Age,Spécialité,Genre,Nivuea,Telephone,modules,Date}=req.body
+    
+    const response=await Registerstud({identifinate,Name,Age,Spécialité,Genre,Nivuea,Telephone,modules,Date})
     return res.status(response.StatusCode).json(response)
 })
 route.get("/Student",validatejwt,async(req,res)=>{
@@ -28,8 +29,8 @@ res.status(response.StatusCode).json(response)
 route.put("/Student/:id",validatejwt,async(req,res)=>{
         const identifinate=(req as any).payload
         const idStud=req.params.id
-        const {Name,Age,Nivuea,Telephone,modules} = req.body
-        const response = await updateStudent({identifinate,idStud,Name,Age,Nivuea,Telephone,modules})
+        const {Name,Age,Spécialité,Genre,Nivuea,Telephone,modules,Date} = req.body
+        const response = await updateStudent({identifinate,idStud,Name,Age,Spécialité,Genre,Nivuea,Telephone,modules,Date})
         res.status(response.StatusCode).json(response)
 })
 route.delete("/Student/:id",validatejwt,async(req,res)=>{

@@ -1,13 +1,10 @@
-import React from "react";
 import Styles from "../Styles/Tableboard.module.css";
-
 import {
   Box,
   Typography,
   Grid,
   Paper,
 } from "@mui/material";
-
 import PeopleIcon from "@mui/icons-material/People";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PaymentIcon from "@mui/icons-material/Payment";
@@ -16,13 +13,13 @@ import ShowChartIcon from "@mui/icons-material/ShowChart";
 
 export function TablBoard() {
   return (
-    <Box className={Styles.dashboard}>
+    <Box className={Styles.dashboard} p={3}>
       <Typography variant="h4" gutterBottom className={Styles.title}>
         Tableau de bord
       </Typography>
 
       {/* Cards */}
-      <Grid container spacing={2} className={Styles.cardsContainer}>
+      <Grid container spacing={3} className={Styles.cardsContainer}>
         <Grid item xs={12} sm={6} md={3}>
           <Paper className={Styles.card} elevation={3}>
             <PeopleIcon style={{ fontSize: 40, color: "#1976d2" }} />

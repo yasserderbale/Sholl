@@ -72,9 +72,10 @@ export function Matires() {
       </Typography>
 
       <Button
-      startIcon={<AddIcon/>}
-        variant="contained"
-        color="primary"
+       startIcon={<AddIcon />}
+          variant="contained"
+          color="primary"
+         sx={{ borderRadius:"10px", textTransform:"none" }}
         onClick={() => setShowModal(true)}
         className={Styles.btnAjouter}
       >
@@ -132,10 +133,6 @@ export function Matires() {
         <MenuItem value={"Espagnole"}>Espagnole</MenuItem>
         <MenuItem value={"Italie"}>Italie</MenuItem>
         <MenuItem value={"Filaue"}>Filaue</MenuItem>
-
-
-        
-
       </Select>
         <InputLabel id="demo-simple-select-autowidth-label">Matiere</InputLabel>
               <TextField

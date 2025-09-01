@@ -22,7 +22,14 @@ import {
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import { usAuth } from '../Context/AuthContext';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import AddIcon from '@mui/icons-material/Add';
+import { Snackbar, Alert } from "@mui/material";
 export function Paimentes() {
+   const [toast, setToast] = useState<{open:boolean, message:string, severity:"success"|"error"|"info"|"warning"}>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 const [showModal, setShowModal] = useState(false);
 const {stude,tocken} = usAuth()
 const Moise = ['janvier','fevrier','marse','avrile','mey','joine','juillet','aute','september','october','november','december']
@@ -93,10 +100,10 @@ const SendPaimente = await  fetch("http://localhost:3000/Paimentes",{
 })
   const response = await SendPaimente.json()
 if(response.StatusCode!=200){
-  alert(response.data)
+  setToast({ open: true, message: `${response.data}`, severity: "error" })
   return
 }
- alert("paiment Register succed")
+ setToast({ open: true, message: "paiment Register succed ", severity: "success" });
  setShowModal(false)
  console.log(response.data)
  setmodlesStud({})
@@ -185,29 +192,56 @@ const SearchePai = async(search:any)=>{
 const valPrice = useRef<any>(null)
   return (
     <Box className={Styles.page} p={3}>
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={3000}
+        onClose={() => setToast({ ...toast, open: false })}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setToast({ ...toast, open: false })}
+          severity={toast.severity}
+          sx={{ width: "100%"}}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
       <Typography variant="h4" gutterBottom className={Styles.title}>
         Gestion des paiements
       </Typography>
       <Box className={Styles.actions} display="flex" gap={2} mb={2}>
         <TextField
         onChange={(e:any)=>{SearchePai(e.target.value)}}
-          label="Rechercher par élève"
+          label="🔍 Rechercher par nom"
           variant="outlined"
           size="small"
-          className={Styles.input}
+          sx={{
+            width:250,
+            background:"#f9fafb",
+            borderRadius:"10px"
+          }}
         />
         <Button
+         startIcon={<AddIcon />}
           variant="contained"
           color="primary"
+         sx={{ borderRadius:"10px", textTransform:"none" }}
           onClick={() => setShowModal(true)}
           className={Styles.btnAjouter}
         >
-          ➕ Ajouter Paiement
+           Ajouter Paiement
         </Button>
       </Box>
       
       {getpaimentes.length ==0 ?
-    <h1>No data</h1>  :
+     <Typography
+              variant="body1"
+              align="center"
+              color="textSecondary"
+              style={{ marginTop: "29px" }}
+            >
+              Aucun résultat trouvé.
+            </Typography>  :
       <Paper> 
   <TableContainer>
          <Table className={Styles.table}>

@@ -55,6 +55,18 @@ const {logoute} = usAuth()
           <ListItemText primary="Gestion des élèves" />
         </ListItem>
 
+         <ListItem
+          component={Link}
+          to="/Etudiantes"
+          className={Styles.link}
+          
+        >
+          <ListItemIcon>
+            <PeopleIcon />
+          </ListItemIcon>
+          <ListItemText primary="Gestion des Profs" />
+        </ListItem>
+
         <ListItem component={Link} to="/Matires" className={Styles.link} >
           <ListItemIcon>
             <SchoolIcon />

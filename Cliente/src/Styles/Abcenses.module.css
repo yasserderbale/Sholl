@@ -11,19 +11,7 @@
 }
 
 /* زر الإضافة */
-.btnAjouter {
-  background: linear-gradient(135deg, #2563eb, #1e40af);
-  color: #fff;
-  padding: 10px 22px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-.btnAjouter:hover {
-  background: linear-gradient(135deg, #1e40af, #1d4ed8);
-  transform: translateY(-2px);
-}
+
 
 /* barre de recherche */
 .searchBar {

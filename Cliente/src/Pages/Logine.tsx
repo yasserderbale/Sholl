@@ -1,8 +1,10 @@
-import  { useRef } from "react";
+import  { useRef, useState } from "react";
 import Styles from "../Styles/Login.module.css";
 import { useNavigate } from "react-router-dom";
 import { usAuth } from "../Context/AuthContext";
+import { Alert, Snackbar } from "@mui/material";
 export function Logine() {
+  const [Toast,setToast] = useState<{open:boolean,msg:string,type:"success" | "error"}>({open:false,msg:"",type:"success"})
   const {login} = usAuth()
   const navigate =useNavigate()
   let identifianteref  = useRef<HTMLInputElement>(null) 
@@ -27,15 +29,20 @@ export function Logine() {
      identifianteref.current!.value="",
     passwordref.current!.value=""
 navigate("/TBoard")
+    setToast({open:true,msg:"Bienvenu dans Votre application",type:'success'})
+
    }
    else {
-    alert(data.data)
+    setToast({open:true,msg:`${data.data}`,type:'error'})
     navigate("/")
    }
  }
 
   return (
     <div className={Styles.container}>
+      <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={Toast.open} autoHideDuration={4000} onClose={()=>setToast({...Toast,open:false})}>
+        <Alert severity={Toast.type}>{Toast.msg}</Alert>
+      </Snackbar>
       {/* Left Side */}
       <div className={Styles.leftSide}>
         <h1 className={Styles.logo}>Taj Ilme</h1>

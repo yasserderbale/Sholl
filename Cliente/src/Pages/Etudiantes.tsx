@@ -169,7 +169,7 @@ export function Etudiantes() {
       <Typography variant="h4" className={Styles.title} gutterBottom>
         Gestion des élèves
       </Typography>
-      <Box className={Styles.actions} mb={2} display="flex" gap={2}>
+      <Box  mb={2} display="flex" gap={2}>
         <TextField
           onChange={(e:any)=>seracheStud(e.target.value)}
           label="🔍 Rechercher par nom"
@@ -191,7 +191,10 @@ export function Etudiantes() {
           Ajouter un élève
         </Button>
       </Box>
-      {stude.length==0? <Typography>Aucune donnée</Typography>:
+      {stude.length==0? <Typography  variant="body1"
+              align="center"
+              color="textSecondary"
+              style={{ marginTop: "29px" }}>Aucune donnée</Typography>:
       <Paper sx={{ borderRadius:"12px", boxShadow:"0 6px 20px rgba(0,0,0,0.1)" }}>
         <Table className={Styles.table}>
           <TableHead sx={{ background:"#f1f5f9" }}>
@@ -278,7 +281,7 @@ export function Etudiantes() {
           <Box className={Styles.modalContent} sx={{ maxWidth:"900px", borderRadius:"16px" }}>
             <Typography variant="h6" fontWeight="bold" mb={2}>Ajouter un élève</Typography>
             <form onSubmit={add} className={Styles.form}>
-              <TextField inputRef={name} label="Nom complet" required fullWidth margin="normal"/>
+              <TextField  inputRef={name} label="Nom complet" required fullWidth margin="normal"/>
               <TextField inputRef={age} label="Âge" type="number" required fullWidth margin="normal"/>
               <Typography>Spécialité</Typography>
               <Select  onChange={handlspecialite} value={Spécialité}> 

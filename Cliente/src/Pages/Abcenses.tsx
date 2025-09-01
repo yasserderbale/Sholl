@@ -19,6 +19,7 @@ import {
   type SelectChangeEvent,
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import AddIcon from '@mui/icons-material/Add';
 import { usAuth } from "../Context/AuthContext";
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -97,7 +98,7 @@ const Addabcens = async (event: React.FormEvent) => {
     setShowModal(false);
     GetAbcense();
 
-    setToast({ open: true, message: "Absence ajoutée avec succès ✅", severity: "success" });
+    setToast({ open: true, message: "Absence ajoutée avec succès ", severity: "success" });
   } catch (error) {
     setToast({ open: true, message: "Erreur serveur ❌", severity: "error" });
   }
@@ -148,18 +149,23 @@ const Addabcens = async (event: React.FormEvent) => {
       <Box className={styles.actions} mb={2} display="flex" gap={2}>
         <TextField
           onChange={(e) => Searche(e.target.value)}
-          label="Rechercher par nom"
+         label="🔍 Rechercher par nom"
           variant="outlined"
           size="small"
-          className={styles.searche}
+          sx={{
+            width:250,
+            background:"#f9fafb",
+            borderRadius:"10px"
+          }}
         />
         <Button
+          startIcon={<AddIcon />}
           variant="contained"
           color="primary"
-          onClick={() => setShowModal(true)}
-          className={styles.btnAjouter}
+         sx={{ borderRadius:"10px", textTransform:"none" }}
+         onClick={() => setShowModal(true)}
         >
-          ➕ Ajouter une absence
+           Ajouter une absence
         </Button>
       </Box>
 

@@ -13,7 +13,7 @@ export function Logine() {
   e.preventDefault()
    const identifiante = identifianteref.current?.value || ""
     const password = passwordref.current?.value || ""
-    if(!identifiante || !password) {alert("Saiser Tous Les Shamp")
+    if(!identifiante || !password) {setToast({open:"true",msg:"Saiser Tous Les Shamp",type:"error"})
        return}
     
    const res = await fetch("http://localhost:3000/Login",{
@@ -40,8 +40,8 @@ navigate("/TBoard")
 
   return (
     <div className={Styles.container}>
-      <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={Toast.open} autoHideDuration={4000} onClose={()=>setToast({...Toast,open:false})}>
-        <Alert severity={Toast.type}>{Toast.msg}</Alert>
+      <Snackbar  anchorOrigin={{ vertical: "top", horizontal: "center" }} open={Toast.open} autoHideDuration={4000} onClose={()=>setToast({...Toast,open:false})}>
+        <Alert sx={{width:"190px"}} severity={Toast.type}>{Toast.msg}</Alert>
       </Snackbar>
       {/* Left Side */}
       <div className={Styles.leftSide}>

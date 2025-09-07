@@ -5,7 +5,6 @@ const route=express.Router()
 route.post("/Student",validatejwt,async(req,res)=>{    
     const identifinate=(req as any).payload
     const {Name,Age,Spécialité,Genre,Nivuea,Telephone,modules,Date}=req.body
-    
     const response=await Registerstud({identifinate,Name,Age,Spécialité,Genre,Nivuea,Telephone,modules,Date})
     return res.status(response.StatusCode).json(response)
 })
@@ -39,4 +38,4 @@ route.delete("/Student/:id",validatejwt,async(req,res)=>{
         const response = await DeletStudents({identifinate,idStud})
          res.status(response.StatusCode).json(response)
 })
-export default route
+export default route    

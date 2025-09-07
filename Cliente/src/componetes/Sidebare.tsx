@@ -37,7 +37,7 @@ const {logoute} = usAuth()
           </ListItemIcon>
           <ListItemText primary="Dashboard" />
         </ListItem>
- <ListItem component={Link} to="/Abcenses" className={Styles.link} >
+          <ListItem component={Link} to="/Abcenses" className={Styles.link} >
           <ListItemIcon>
             <PersonAddDisabledSharpIcon />
           </ListItemIcon>
@@ -94,7 +94,7 @@ const {logoute} = usAuth()
           {openRapports ? <ExpandLess /> : <ExpandMore />}
         </ListItem>
 
-        <Collapse in={openRapports} timeout="auto" unmountOnExit>
+        <Collapse className={Styles.linkRapport} sx={{overflowY:'auto',maxHeight:"110px"}} in={openRapports} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
             <ListItem
               component={Link}

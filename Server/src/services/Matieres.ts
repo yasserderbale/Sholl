@@ -21,14 +21,14 @@ export const Deletmatiere = async ({ idmatiere, identifiante }: Imatiere) => {
 interface Imatiereupd {
   idmatiere: any;
   identifiante: string;
-  name: string;
   prix: number;
+  Niveau:string;
 }
 export const updatematiere = async ({
   identifiante,
   idmatiere,
-  name,
   prix,
+  Niveau
 }: Imatiereupd) => {
   if (!identifiante) {
     return { StatusCode: 401, data: "Token is missing" };
@@ -36,16 +36,12 @@ export const updatematiere = async ({
   if (!idmatiere) {
     return { StatusCode: 404, data: "ID of matiere is invalid" };
   }
-  if (!name && !prix) {
+  if ( !prix && !Niveau) {
     return { StatusCode: 400, data: "Name or prix is invalid" };
   }
-  //const getMat =await Matieres.find()
-  //const Filtmatire= getMat.map((item)=>item.name)
-  //for(let i of Filtmatire) {
-    //if(name==i) return { StatusCode: 400, data: "Matiere Already existe" };
- // }
+ 
   const update = await Matieres.findByIdAndUpdate(idmatiere 
-   , { $set: { name, prix }},
+   , { $set: {  prix,Niveau }},
    {returnDocument:"after"}
      
   );
@@ -75,22 +71,34 @@ return {StatusCode:200,data:getone}
 }
 interface Iident {
   identifiante: string;
-  name: string;
+  namee: string;
   prix: number;
+  Niveau:string
 }
-export const Newmatire = async({ identifiante, name, prix }: Iident) => {
+export const Newmatire = async({ identifiante, namee, prix,Niveau }: Iident) => {
   if (!identifiante) return { StatusCode: 401, data: "there isn`t tocken" };
-  if (!name || !prix) return { StatusCode: 401, data: "there isn`t name or prix" };
+  if (!namee || !prix || !Niveau) return { StatusCode: 401, data: "there isn`t name or prix" };
   const findname= await Matieres.find()
   if(!findname) return {StatusCode:401,data:"no reultate finding"}
-  const nametires= findname.map((Name)=>Name.name)
-  for (let nam of nametires) {
-    if(nam==name) {
+  const nametires = findname.map((Name)=>(Name))
+ for (let nam of nametires) {
+    if(nam.name==namee && nam.Niveau==Niveau){
+      console.log(nam.name,nam.Niveau)
+      console.log(namee,Niveau)
         return {StatusCode:404,data:"matires already existe"} 
     } 
   }
-const insertdata=await Matieres.create({name,prix})
+const insertdata=await Matieres.create({"name":namee,"prix":prix,"Niveau":Niveau})
 if(!insertdata) return { StatusCode: 401, data: "no data saving" };
 await insertdata.save()
 return { StatusCode: 200, data: insertdata };
 };
+interface Isearch{
+  identifiante:string,
+  searche:any
+}
+export const Searchonmat = async({identifiante,searche}:Isearch)=>{
+    if (!identifiante) return { StatusCode: 401, data: "there isn`t tocken" };
+      const getonemat =await Matieres.find({name:{$regex:searche,$options:"i"}})
+      return {StatusCode:200,data:getonemat}
+}

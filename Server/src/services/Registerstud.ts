@@ -30,8 +30,8 @@ export const Registerstud =async ({
   const getnamOfStundets = await Studentemodel.findOne({Name})
   if(getnamOfStundets) return { StatusCode: 404, data: "studentes already exist " };
   const Allmodel = await Promise.all(
-   modules.map(async(Name)=>{
-      const searchemodel = await Matieres.findOne({name:Name})
+   modules.map(async(idmat)=>{
+      const searchemodel = await Matieres.findById({_id:idmat})
       if(!searchemodel) return {StatusCode:404,data:"no model existe"}
       return {
         matid:searchemodel._id,
@@ -39,7 +39,7 @@ export const Registerstud =async ({
     })
   )
   if(!Allmodel) return {StatusCode:404,data:"ther isn`t model "}
-
+    console.log(Allmodel)
   const newStudent = await Studentemodel.create({
     Name,Age,Spécialité,Genre,Nivuea,Telephone,modules:Allmodel,Date
   })
@@ -85,8 +85,8 @@ interface Iupdate{
 export const updateStudent=async({identifinate,idStud,Name,Age,Spécialité,Genre,Nivuea,Telephone,modules,Date}:Iupdate)=>{
 if(!identifinate) return {StatusCode:404,data:"identinfiante not provide"}
 if(!idStud && !Name  && !Age && !Nivuea && !Telephone && !modules && !Spécialité && !Genre && !Date) return {StatusCode:404,data:"Id not valid"}
- const getMatieres = await Promise.all( modules.map(async(Nam)=>{
-const getmatieres = await Matieres.findOne({name:Nam})
+ const getMatieres = await Promise.all( modules.map(async(idmat)=>{
+const getmatieres = await Matieres.findOne({_id:idmat})
 if(!getmatieres)  return null
 return {
   matid:getmatieres._id,

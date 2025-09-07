@@ -56,7 +56,7 @@ export function Etudiantes() {
     setspecialite(value)
   }
   const {mat,tocken,getStudentes,stude,seracheStud} = usAuth()
-  const name = useRef<HTMLInputElement>(null)
+  const name = useRef<HTMLInputElement>(null) 
   const age = useRef<HTMLInputElement>(null)
   const phone = useRef<HTMLInputElement>(null)
   const date =useRef<HTMLInputElement>(null)
@@ -112,7 +112,7 @@ export function Etudiantes() {
     age.current!.value=response.data.Age
     phone.current!.value=response.data.Telephone
     date.current!.value=new Date(response.data.Date).toISOString().split('T')[0]
-    setModules(response.data.modules.map((nam:any)=>nam.matid.name))
+    setModules(response.data.modules.map((nam:any)=>nam.matid._id))
     setgenre(response.data.Genre)
     setniveau(response.data.Nivuea)
     setspecialite(response.data.Spécialité)
@@ -159,7 +159,9 @@ export function Etudiantes() {
     setToast({open:true,msg:"Élève modifié",type:"success"})
     getStudentes()  
     setShowModalup(null)
+    setModules([])
   }
+  console.log(modules)
   return (
     <Box className={Styles.page} p={3}>
        {/* Snackbar */}
@@ -233,11 +235,13 @@ export function Etudiantes() {
           </TableBody>
         </Table>
       </Paper>}
+
       {/* === Modals === */}
+
       {/* Voir */}
       <Modal open={!!selectedStudent} onClose={()=>setSelectedStudent(null)}>
         <Box className={Styles.modalOverlay}>
-          <Box className={Styles.modalContent} sx={{ maxWidth:"900px", borderRadius:"16px" }}>
+          <Box className={Styles.modalContent} sx={{ maxWidth:"930px", borderRadius:"16px" }}>
             <Typography variant="h6" fontWeight="bold" mb={2}>
               Détails de {selectedStudent?.Name}
             </Typography>
@@ -306,7 +310,7 @@ export function Etudiantes() {
               <Typography variant="subtitle1">Modules :</Typography>
               <Select multiple value={modules} onChange={handleChangeModules} input={<OutlinedInput />} MenuProps={MenuProps} fullWidth>
                 {(mat??[]).map((item) => (
-                  <MenuItem key={item._id} value={item.name}>{item.name}</MenuItem>
+                  <MenuItem key={item._id} value={item._id } >{item.name} de {item.Niveau}</MenuItem>
                 ))}
               </Select>
                <FormLabel id="demo-controlled-radio-buttons-group">Gender</FormLabel>
@@ -360,7 +364,7 @@ export function Etudiantes() {
               <Typography variant="subtitle1">Modules :</Typography>
               <Select multiple value={modules} onChange={handleChangeModules} input={<OutlinedInput />} MenuProps={MenuProps} fullWidth>
                 {(mat??[]).map((item) => (
-                  <MenuItem key={item._id} value={item.name}>{item.name}</MenuItem>
+                  <MenuItem key={item._id} value={item._id}>{item.name} de {item.Niveau}</MenuItem>
                 ))}
               </Select>
               <RadioGroup
@@ -376,7 +380,7 @@ export function Etudiantes() {
               <TextField type="date" inputRef={date} required fullWidth margin="normal"/>
               <Box mt={2} display="flex" justifyContent="flex-end" gap={2}>
                 <Button variant="contained" type="submit">Modifier</Button>
-                <Button variant="outlined" onClick={()=>setShowModalup(null)}>Annuler</Button>
+                <Button variant="outlined" onClick={()=>{setShowModalup(null),setModules([])}}>Annuler</Button>
               </Box>
             </form>
           </Box>

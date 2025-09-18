@@ -13,6 +13,8 @@ import { Logine } from "./Pages/Logine";
 import { Abcenses } from "./Pages/Abcenses";
 import { AuthProvider } from "./Context/AuthContext";
 import { ProtectedRoute } from "./Pages/ProtectedRoute";
+import { Groupe } from "./Pages/Groupe";
+import {Classes} from './Pages/Classes'
 
 function App() {
   return (
@@ -33,6 +35,8 @@ function App() {
             <Route path="TBoard" element={<TablBoard />} />
             <Route path="Etudiantes" element={<Etudiantes />} />
             <Route path="Matires" element={<Matires />} />
+            <Route path="Groupe" element={<Groupe/>}/>
+            <Route path="Classes" element={<Classes/>}/>
             <Route path="Paimentes" element={<Paimentes />} />
             <Route path="RapportPaiements" element={<RapportPaiements />} />
             <Route path="RapportEleves" element={<RapportEleves />} />

@@ -16,6 +16,8 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
+import GroupsIcon from '@mui/icons-material/Groups';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PersonAddDisabledSharpIcon from '@mui/icons-material/PersonAddDisabledSharp';
 import { usAuth } from "../Context/AuthContext";
 
@@ -73,82 +75,40 @@ const {logoute} = usAuth()
           </ListItemIcon>
           <ListItemText primary="Gestion des matières" />
         </ListItem>
+           <ListItem component={Link} to="/Paimentes" className={Styles.link} >
+          <ListItemIcon>
+            <PaymentIcon />
+          </ListItemIcon>
+          <ListItemText primary="Paimentes" />
+        </ListItem>
 
         <ListItem
           component={Link}
-          to="/Paimentes"
+          to="/Groupe"
+          className={Styles.link}
+          
+        >
+          <ListItemIcon>
+            <GroupsIcon />
+          </ListItemIcon>
+          <ListItemText primary="Groupe" />
+        </ListItem>
+
+         <ListItem
+          component={Link}
+          to="/Classes"
           className={Styles.link}
           
         >
           <ListItemIcon>
             <PaymentIcon />
           </ListItemIcon>
-          <ListItemText primary="Paiements" />
+          <ListItemText primary="Classes" />
         </ListItem>
 
-        <ListItem onClick={toggleRapports} className={Styles.link} >
-          <ListItemIcon>
-            <AssessmentIcon />
-          </ListItemIcon>
-          <ListItemText primary="Rapports" />
-          {openRapports ? <ExpandLess /> : <ExpandMore />}
-        </ListItem>
+       
 
-        <Collapse className={Styles.linkRapport} sx={{overflowY:'auto',maxHeight:"110px"}} in={openRapports} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            <ListItem
-              component={Link}
-              to="/RapportPaiements"
-              className={Styles.link}
-              
-              sx={{ pl: 4 }}
-            >
-              <ListItemIcon>
-                <InsertDriveFileIcon />
-              </ListItemIcon>
-              <ListItemText primary="Rapport Paiements" />
-            </ListItem>
-
-            <ListItem
-              component={Link}
-              to="/RapportEleves"
-              className={Styles.link}
-              
-              sx={{ pl: 4 }}
-            >
-              <ListItemIcon>
-                <InsertDriveFileIcon />
-              </ListItemIcon>
-              <ListItemText primary="Rapport Élèves" />
-            </ListItem>
-
-            <ListItem
-              component={Link}
-              to="/RapportAbsences"
-              className={Styles.link}
-              
-              sx={{ pl: 4 }}
-            >
-              <ListItemIcon>
-                <InsertDriveFileIcon />
-              </ListItemIcon>
-              <ListItemText primary="Rapport Absences" />
-            </ListItem>
-
-            <ListItem
-              component={Link}
-              to="/RapportGeneral"
-              className={Styles.link}
-              
-              sx={{ pl: 4 }}
-            >
-              <ListItemIcon>
-                <InsertDriveFileIcon />
-              </ListItemIcon>
-              <ListItemText primary="Rapport Général" />
-            </ListItem>
-          </List>
-        </Collapse>
+       
 
         <ListItem
           component={Link}

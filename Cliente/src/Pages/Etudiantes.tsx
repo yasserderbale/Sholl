@@ -161,7 +161,6 @@ export function Etudiantes() {
     setShowModalup(null)
     setModules([])
   }
-  console.log(modules)
   return (
     <Box className={Styles.page} p={3}>
        {/* Snackbar */}

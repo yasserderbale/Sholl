@@ -1,6 +1,6 @@
 /* Sidebar.module.css */
 
-.sidebar {
+.sidebar {  
   height: 100vh;
   width: 20%;
   background-color: #ffffff;
@@ -19,7 +19,6 @@
 }
 
 .navLinks {
-  
   display: flex;
   flex-direction: column;
   padding: 20px;

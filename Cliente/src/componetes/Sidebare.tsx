@@ -20,6 +20,7 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PersonAddDisabledSharpIcon from '@mui/icons-material/PersonAddDisabledSharp';
 import { usAuth } from "../Context/AuthContext";
+import { CalendarIcon } from "@mui/x-date-pickers";
 
 export const Sidebar: React.FC = () => {
   const [openRapports, setOpenRapports] = React.useState(false);
@@ -59,7 +60,7 @@ const {logoute} = usAuth()
 
          <ListItem
           component={Link}
-          to="/Etudiantes"
+          to="/Profes"
           className={Styles.link}
           
         >
@@ -107,7 +108,17 @@ const {logoute} = usAuth()
         </ListItem>
 
        
-
+         <ListItem
+          component={Link}
+          to="/Temps"
+          className={Styles.link}
+          
+        >
+          <ListItemIcon>
+            <CalendarIcon />
+          </ListItemIcon>
+          <ListItemText primary="Emploi de temps" />
+        </ListItem>
        
 
         <ListItem

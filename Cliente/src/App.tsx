@@ -15,7 +15,8 @@ import { AuthProvider } from "./Context/AuthContext";
 import { ProtectedRoute } from "./Pages/ProtectedRoute";
 import { Groupe } from "./Pages/Groupe";
 import {Classes} from './Pages/Classes'
-
+import {Temps} from './Pages/Temps'
+import {Profes} from './Pages/Profes'
 function App() {
   return (
     <AuthProvider>
@@ -34,6 +35,7 @@ function App() {
           >
             <Route path="TBoard" element={<TablBoard />} />
             <Route path="Etudiantes" element={<Etudiantes />} />
+            <Route path="Profes" element={<Profes/>}/>
             <Route path="Matires" element={<Matires />} />
             <Route path="Groupe" element={<Groupe/>}/>
             <Route path="Classes" element={<Classes/>}/>
@@ -43,6 +45,7 @@ function App() {
             <Route path="RapportAbsences" element={<RapportAbsences />} />
             <Route path="RapportGeneral" element={<RapportGeneral />} />
             <Route path="Parametres" element={<Parametres />} />
+            <Route path="Temps" element={<Temps />} />
             <Route path="Abcenses" element={<Abcenses />} />
           </Route>
         </Routes>

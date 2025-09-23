@@ -7,6 +7,7 @@ import Matier from "./routes/Matieres"
 import Abcense from "./routes/Abcenses"
 import Paimentes from "./routes/Paimentes"
 import Dachborde from "./routes/Dachbord"
+import Groupes from "./routes/Groupes"
 const app=express()
 app.use(express.json())
 app.use(cors())
@@ -21,6 +22,7 @@ app.use(Matier)
 app.use(Abcense)
 app.use(Paimentes)
 app.use(Dachborde)
+app.use(Groupes)
 const port = 3000
 app.listen(port,()=>{
     console.log("server run on",port)

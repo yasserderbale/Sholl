@@ -1,7 +1,7 @@
 import { Groupemodel } from "../models/Groupe";
 interface IGroupe {
-  identifaite: String;
-  name: String;
+  identifaite: string;
+  name: string;
   nbrmax: Number;
   fraise: Number;
 }
@@ -14,6 +14,9 @@ export const AddnewGroup = async ({
   if (!identifaite) return { StatusCode: 401, data: "there isn`t tocken" };
   if (!name || !nbrmax || !fraise)
     return { StatusCode: 501, data: "youve inser all informations" };
+  const checkname = await Groupemodel.findOne({ name });
+  if (checkname?.name == name)
+    return { StatusCode: 404, data: "name deja exister" };
   const addnewgroup = await Groupemodel.create({
     name,
     Nbrmax: nbrmax,
@@ -30,4 +33,59 @@ export const GetAllgroupes = async ({ identifaite }: Iallgroups) => {
   const getgroups = await Groupemodel.find();
   if (!getgroups) return { StatusCode: 404, data: getgroups };
   return { StatusCode: 200, data: getgroups };
+};
+interface Iongroups {
+  identifaite: string;
+  idgroupe: string;
+}
+export const Getongroupe = async ({ identifaite, idgroupe }: Iongroups) => {
+  if (!identifaite) return { StatusCode: 401, data: "there isn`t tocken" };
+  if (!idgroupe) return { StatusCode: 401, data: "there isn`t of groupe " };
+  const fetchgrouid = await Groupemodel.findById(idgroupe);
+  return { StatusCode: 200, data: fetchgrouid };
+};
+export const deleteongroupe = async ({ identifaite, idgroupe }: Iongroups) => {
+  if (!identifaite) return { StatusCode: 401, data: "there isn`t tocken" };
+  if (!idgroupe) return { StatusCode: 401, data: "there isn`t of groupe " };
+  const fetchgrouid = await Groupemodel.findByIdAndDelete(idgroupe);
+  return { StatusCode: 200, data: fetchgrouid };
+};
+
+interface Iupdategroups {
+  identifaite: String;
+  idgroupe: String;
+  name: String;
+  Nbrmax: Number;
+  fraisscolaire: Number;
+}
+export const Updateongroupe = async ({
+  identifaite,
+  idgroupe,
+  name,
+  Nbrmax,
+  fraisscolaire,
+}: Iupdategroups) => {
+  if (!identifaite) return { StatusCode: 401, data: "there isn`t tocken" };
+  if (!idgroupe) return { StatusCode: 401, data: "there isn`t of groupe " };
+  if (!name && !Nbrmax && !fraisscolaire)
+    return { StatusCode: 401, data: "youve to insert any update" };
+  const fetchupdate = await Groupemodel.findByIdAndUpdate(
+    idgroupe,
+    { $set: { name, Nbrmax, fraisscolaire } },
+    { new: true }
+  );
+  if (!fetchupdate)
+    return { StatusCode: 404, data: "no updating", fetchupdate };
+  return { StatusCode: 200, data: fetchupdate };
+};
+interface Isearch {
+  identifaite: string;
+  search: any;
+}
+export const Searchgr = async ({ identifaite, search }: Isearch) => {
+  if (!identifaite) return { StatusCode: 401, data: "there isn`t tocken" };
+  const searchOne = await Groupemodel.find({
+    name: { $regex: `${search}`, $options: "i" },
+  });
+  return { StatusCode: 200, data: searchOne };
 };

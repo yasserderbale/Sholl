@@ -55,7 +55,7 @@ export function Etudiantes() {
     const { value } = event.target
     setspecialite(value)
   }
-  const { mat, tocken, getStudentes, stude, seracheStud } = usAuth()
+  const { mat, tocken, getStudentes, stude, seracheStud, groupe } = usAuth()
   const name = useRef<HTMLInputElement>(null)
   const age = useRef<HTMLInputElement>(null)
   const phone = useRef<HTMLInputElement>(null)
@@ -294,6 +294,12 @@ export function Etudiantes() {
                 <MenuItem value={"Mathématiques"}>Mathématiques</MenuItem>
                 <MenuItem value={"Langues"}>Langues</MenuItem>
                 <MenuItem value={"Gestion & économie"}>Gestion & économie</MenuItem>
+              </Select>
+              <Typography>Groupe</Typography>
+              <Select>
+                {groupe.map((item) => (
+                  <MenuItem>{item.name}</MenuItem>
+                ))}
               </Select>
               <Typography>Niveau</Typography>
               <Select onChange={handlnivuea} value={Nivuea}>

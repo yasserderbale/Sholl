@@ -2,8 +2,8 @@ import { Groupemodel } from "../models/Groupe";
 interface IGroupe {
   identifaite: string;
   name: string;
-  nbrmax: Number;
-  fraise: Number;
+  nbrmax: number;
+  fraise: number;
 }
 export const AddnewGroup = async ({
   identifaite,
@@ -26,7 +26,7 @@ export const AddnewGroup = async ({
   return { StatusCode: 200, data: addnewgroup };
 };
 interface Iallgroups {
-  identifaite: String;
+  identifaite: string;
 }
 export const GetAllgroupes = async ({ identifaite }: Iallgroups) => {
   if (!identifaite) return { StatusCode: 401, data: "there isn`t tocken" };
@@ -52,11 +52,11 @@ export const deleteongroupe = async ({ identifaite, idgroupe }: Iongroups) => {
 };
 
 interface Iupdategroups {
-  identifaite: String;
-  idgroupe: String;
-  name: String;
-  Nbrmax: Number;
-  fraisscolaire: Number;
+  identifaite: string;
+  idgroupe: string;
+  name: string;
+  Nbrmax: number;
+  fraisscolaire: number;
 }
 export const Updateongroupe = async ({
   identifaite,

@@ -30,6 +30,7 @@ app.put("/Groupes/:id", validatejwt, async (req, res) => {
   const identifaite = (req as any).payload;
   const idgroupe = req.params.id;
   const { name, Nbrmax, fraisscolaire } = req.body;
+  console.log(req.body)
   const reponse = await Updateongroupe({
     identifaite,
     idgroupe,

@@ -11,8 +11,8 @@ import {
 const app = express.Router();
 app.post("/Groupes", validatejwt, async (req, res) => {
   const identifaite = (req as any).payload;
-  const { name, nbrmax, fraise } = req.body;
-  const response = await AddnewGroup({ identifaite, name, nbrmax, fraise });
+  const { name, nbrmax, fraise,Studentid } = req.body;
+  const response = await AddnewGroup({ identifaite, name, nbrmax, fraise,Studentid });
   res.status(response.StatusCode).json(response);
 });
 app.get("/Groupes", validatejwt, async (req, res) => {
@@ -30,7 +30,7 @@ app.put("/Groupes/:id", validatejwt, async (req, res) => {
   const identifaite = (req as any).payload;
   const idgroupe = req.params.id;
   const { name, Nbrmax, fraisscolaire } = req.body;
-  console.log(req.body)
+  console.log(req.body);
   const reponse = await Updateongroupe({
     identifaite,
     idgroupe,

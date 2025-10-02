@@ -1,5 +1,6 @@
 import { Groupemodel } from "../models/Groupe";
 interface IGroupe {
+  Studentid: any;
   identifaite: string;
   name: string;
   nbrmax: number;
@@ -10,9 +11,10 @@ export const AddnewGroup = async ({
   name,
   nbrmax,
   fraise,
+  Studentid,
 }: IGroupe) => {
   if (!identifaite) return { StatusCode: 401, data: "there isn`t tocken" };
-  if (!name || !nbrmax || !fraise)
+  if (!name || !nbrmax || !fraise || !Studentid)
     return { StatusCode: 501, data: "youve inser all informations" };
   const checkname = await Groupemodel.findOne({ name });
   if (checkname?.name == name)
@@ -21,6 +23,7 @@ export const AddnewGroup = async ({
     name,
     Nbrmax: nbrmax,
     fraisscolaire: fraise,
+    Studentid
   });
   if (!addnewgroup) return { StatusCode: 404, data: addnewgroup };
   return { StatusCode: 200, data: addnewgroup };
@@ -30,7 +33,7 @@ interface Iallgroups {
 }
 export const GetAllgroupes = async ({ identifaite }: Iallgroups) => {
   if (!identifaite) return { StatusCode: 401, data: "there isn`t tocken" };
-  const getgroups = await Groupemodel.find();
+  const getgroups = await Groupemodel.find().populate("Studentid");
   if (!getgroups) return { StatusCode: 404, data: getgroups };
   return { StatusCode: 200, data: getgroups };
 };
@@ -50,7 +53,6 @@ export const deleteongroupe = async ({ identifaite, idgroupe }: Iongroups) => {
   const fetchgrouid = await Groupemodel.findByIdAndDelete(idgroupe);
   return { StatusCode: 200, data: fetchgrouid };
 };
-
 interface Iupdategroups {
   identifaite: string;
   idgroupe: string;

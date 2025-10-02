@@ -47,6 +47,7 @@ export function Etudiantes() {
   const [toast, setToast] = useState<{ open: boolean, msg: string, type: 'success' | 'error' }>({ open: false, msg: "", type: "success" })
   const [Nivuea, setniveau] = useState<any>("")
   const [Spécialité, setspecialite] = useState<any>("")
+  const [groupee,setgroupee] = useState<any>("")
   const handlnivuea = (event: SelectChangeEvent) => {
     const { value } = event.target
     setniveau(value)
@@ -54,6 +55,10 @@ export function Etudiantes() {
   const handlspecialite = (event: SelectChangeEvent) => {
     const { value } = event.target
     setspecialite(value)
+  }
+  const hadnlGroups = (event:SelectChangeEvent)=>{
+      const {value} = event.target
+      setgroupee(value)
   }
   const { mat, tocken, getStudentes, stude, seracheStud, groupe } = usAuth()
   const name = useRef<HTMLInputElement>(null)
@@ -161,6 +166,7 @@ export function Etudiantes() {
     setShowModalup(null)
     setModules([])
   }
+  console.log(groupee)
   return (
     <Box className={Styles.page} p={3}>
       {/* Snackbar */}
@@ -204,6 +210,7 @@ export function Etudiantes() {
                 <TableCell >Âge</TableCell>
                 <TableCell sx={{ textAlign: "center" }}>Niveau</TableCell>
                 <TableCell>specialite</TableCell>
+                <TableCell>Groupe</TableCell>
                 <TableCell>Téléphone</TableCell>
                 <TableCell>Modules</TableCell>
                 <TableCell>Date</TableCell>
@@ -214,10 +221,11 @@ export function Etudiantes() {
             <TableBody >
               {(stude ?? []).map((item: any) => (
                 <TableRow key={item._id} hover>
-                  <TableCell >{item.Name}</TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>{item.Name}</TableCell>
                   <TableCell >{item.Age}</TableCell>
                   <TableCell >{item.Nivuea}</TableCell>
                   <TableCell>{item.Spécialité ?? "rien"}</TableCell>
+                  <TableCell>{`Math 2`}</TableCell>
                   <TableCell>{item.Telephone}</TableCell>
                   <TableCell>{item.modules.map((m: any) => m.matid.name).join(",")}</TableCell>
                   <TableCell >{item.Date.split("T")[0]}</TableCell>
@@ -295,10 +303,10 @@ export function Etudiantes() {
                 <MenuItem value={"Langues"}>Langues</MenuItem>
                 <MenuItem value={"Gestion & économie"}>Gestion & économie</MenuItem>
               </Select>
-              <Typography>Groupe</Typography>
-              <Select>
+              <Typography >Groupe</Typography>
+              <Select onChange={hadnlGroups} value={groupee}>
                 {groupe.map((item) => (
-                  <MenuItem>{item.name}</MenuItem>
+                  <MenuItem value={item._id}>{item.name}</MenuItem>
                 ))}
               </Select>
               <Typography>Niveau</Typography>
@@ -347,7 +355,7 @@ export function Etudiantes() {
               <TextField inputRef={name} required fullWidth margin="normal" />
               <TextField inputRef={age} type="number" required fullWidth margin="normal" />
               <Typography>Niveau</Typography>
-              <Select value={Nivuea} input={<OutlinedInput />} MenuProps={MenuProps} fullWidth>
+              <Select onChange={handlnivuea} value={Nivuea} input={<OutlinedInput />} MenuProps={MenuProps} fullWidth>
                 <MenuItem value={"Première moyenne"}>Première moyenne</MenuItem>
                 <MenuItem value={"Seconde moyenne"}>Seconde moyenne</MenuItem>
                 <MenuItem value={"Troisième moyenne"}>Troisième moyenne</MenuItem>
@@ -357,7 +365,7 @@ export function Etudiantes() {
                 <MenuItem value={"Terminale"}>Terminale</MenuItem>
               </Select>
               <Typography>Spécialité</Typography>
-              <Select value={Spécialité} input={<OutlinedInput />} MenuProps={MenuProps} fullWidth>
+              <Select onChange={handlspecialite} value={Spécialité} input={<OutlinedInput />} MenuProps={MenuProps} fullWidth>
                 <MenuItem value={"Fileua"}>Philo</MenuItem>
                 <MenuItem value={"Scientifique"}>Scientifique</MenuItem>
                 <MenuItem value={"Matechnique"}>Matechnique</MenuItem>

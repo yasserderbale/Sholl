@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, type FormEvent } from 'react';
+import React, { useEffect, useRef, useState, } from 'react';
 import Styles from '../Styles/Groupe.module.css';
 import {
   Box,
@@ -28,22 +28,13 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Update } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { usAuth } from '../Context/AuthContext';
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250,
-    },
-  },
-};
 export function Groupe() {
   const [idgroupe, setidgroupe] = useState<any>(null)
   const { groupe, tocken } = usAuth()
   const [Groupe, setGroupe] = useState<any[]>(groupe)
   const [idASupprimer, setIdsupprimer] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [toast, setToast] = useState<{ open: boolean, msg: string, type: 'success' | 'error' }>({ open: false, msg: "", type: "success" })
   useEffect(() => {
     setGroupe(groupe)
   }, [groupe])
@@ -57,7 +48,8 @@ export function Groupe() {
     const fraise = Friase.current?.value
     console.log("avante", name, nbrmax, fraise)
     if (!name || !nbrmax || !fraise) {
-      alert("saisr tous informations")
+      setToast({ open: true, msg: "saisr tous informations", type: "error" })
+
       return
     }
     const newGroupe = await fetch("http://localhost:3000/Groupes", {
@@ -70,7 +62,7 @@ export function Groupe() {
     })
     const response = await newGroupe.json()
     if (response.StatusCode != 200) {
-      alert(response.data)
+      setToast({ open: true, msg: `${response.data}`, type: "error" })
       setShowModal(false)
       return
     }
@@ -79,7 +71,7 @@ export function Groupe() {
     nbr.current!.value = ""
     Friase.current!.value = ""
     setShowModal(false)
-    alert("new Groupe succed")
+    setToast({ open: true, msg: "new Groupe succed", type: "success" })
 
   }
   const getOnegroupe = async (ID: any) => {
@@ -110,11 +102,13 @@ export function Groupe() {
     })
     const reponse = await update.json()
     if (reponse.StatusCode !== 200) {
-      alert(reponse.data)
+      setToast({ open: true, msg: `${reponse.data}`, type: "error" })
+
       return
     }
     setGroupe((prev) => prev.map((item) => item._id == idgroupe ? reponse.data : item))
     setidgroupe(null)
+    setToast({ open: true, msg: "updating succed", type: "success" })
   }
   const Deleteongroupe = async () => {
     const Delete = await fetch(`http://localhost:3000/Groupes/${idASupprimer}`, {
@@ -126,20 +120,35 @@ export function Groupe() {
     })
     const response = await Delete.json()
     if (response.StatusCode != 200) {
-      alert(response.data)
+      setToast({ open: true, msg: `${response.data}`, type: "error" })
       return
     }
     setGroupe((preve) => preve.filter((item) => item._id !== response.data._id))
-    alert("delete succed")
     setIdsupprimer(null)
+    setToast({ open: true, msg: "delete succed", type: "success" })
+  }
+  const Searchgroupe = async (Text: string) => {
+    const searchone = await fetch(`http://localhost:3000/SeatcheGroupe?name=${Text}`, {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${tocken}`
+      }
+
+    })
+    const response = await searchone.json()
+    setGroupe(response.data)
   }
   return (
     <Box className={Styles.page} p={3}>
+      <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={toast.open} autoHideDuration={3000} onClose={() => setToast({ ...toast, open: false })}>
+        <Alert severity={toast.type}>{toast.msg}</Alert>
+      </Snackbar>
       <Typography variant="h4" className={Styles.title} gutterBottom>
         Gestion des groupe
       </Typography>
       <Box mb={2} display="flex" gap={2}>
         <TextField
+          onChange={(e) => Searchgroupe(e.target.value)}
           label="🔍 Rechercher par nom"
           variant="outlined"
           size="small"

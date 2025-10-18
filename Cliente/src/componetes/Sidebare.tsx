@@ -5,30 +5,19 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import Collapse from "@mui/material/Collapse";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import SchoolIcon from "@mui/icons-material/School";
 import PaymentIcon from "@mui/icons-material/Payment";
-import AssessmentIcon from "@mui/icons-material/Assessment";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
-import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
-import ExpandLess from "@mui/icons-material/ExpandLess";
-import ExpandMore from "@mui/icons-material/ExpandMore";
 import GroupsIcon from '@mui/icons-material/Groups';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PersonAddDisabledSharpIcon from '@mui/icons-material/PersonAddDisabledSharp';
 import { usAuth } from "../Context/AuthContext";
 import { CalendarIcon } from "@mui/x-date-pickers";
 
 export const Sidebar: React.FC = () => {
-  const [openRapports, setOpenRapports] = React.useState(false);
-
-  const toggleRapports = () => {
-    setOpenRapports(!openRapports);
-  };
-const {logoute} = usAuth()
+  const { logoute } = usAuth()
   return (
     <aside className={Styles.sidebar}>
       <div className={Styles.logo}>🎓 Mon Logiciel</div>
@@ -40,7 +29,7 @@ const {logoute} = usAuth()
           </ListItemIcon>
           <ListItemText primary="Dashboard" />
         </ListItem>
-          <ListItem component={Link} to="/Abcenses" className={Styles.link} >
+        <ListItem component={Link} to="/Abcenses" className={Styles.link} >
           <ListItemIcon>
             <PersonAddDisabledSharpIcon />
           </ListItemIcon>
@@ -50,7 +39,7 @@ const {logoute} = usAuth()
           component={Link}
           to="/Etudiantes"
           className={Styles.link}
-          
+
         >
           <ListItemIcon>
             <PeopleIcon />
@@ -58,11 +47,11 @@ const {logoute} = usAuth()
           <ListItemText primary="Gestion des élèves" />
         </ListItem>
 
-         <ListItem
+        <ListItem
           component={Link}
           to="/Profes"
           className={Styles.link}
-          
+
         >
           <ListItemIcon>
             <PeopleIcon />
@@ -76,7 +65,7 @@ const {logoute} = usAuth()
           </ListItemIcon>
           <ListItemText primary="Gestion des matières" />
         </ListItem>
-           <ListItem component={Link} to="/Paimentes" className={Styles.link} >
+        <ListItem component={Link} to="/Paimentes" className={Styles.link} >
           <ListItemIcon>
             <PaymentIcon />
           </ListItemIcon>
@@ -87,7 +76,7 @@ const {logoute} = usAuth()
           component={Link}
           to="/Groupe"
           className={Styles.link}
-          
+
         >
           <ListItemIcon>
             <GroupsIcon />
@@ -95,11 +84,11 @@ const {logoute} = usAuth()
           <ListItemText primary="Groupe" />
         </ListItem>
 
-         <ListItem
+        <ListItem
           component={Link}
           to="/Classes"
           className={Styles.link}
-          
+
         >
           <ListItemIcon>
             <PaymentIcon />
@@ -107,25 +96,25 @@ const {logoute} = usAuth()
           <ListItemText primary="Classes" />
         </ListItem>
 
-       
-         <ListItem
+
+        <ListItem
           component={Link}
           to="/Temps"
           className={Styles.link}
-          
+
         >
           <ListItemIcon>
             <CalendarIcon />
           </ListItemIcon>
           <ListItemText primary="Emploi de temps" />
         </ListItem>
-       
+
 
         <ListItem
           component={Link}
           to="/parametres"
           className={Styles.link}
-          
+
         >
           <ListItemIcon>
             <SettingsIcon />

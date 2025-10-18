@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
 import { Abcensesmodel } from "../models/Abcenses";
+import { Studentemodel } from "../models/Student";
 interface Iabcenses {
   identifaite: string;
-  idMat: any;
+  idMat: string[] | string;
   Date: Date;
-  idStud: mongoose.Types.ObjectId;
+  idStud: any[] | any;
   cause: string;
 }
-
 export const RegistnewAbcense = async ({
   identifaite,
   idMat,
@@ -17,33 +17,44 @@ export const RegistnewAbcense = async ({
 }: Iabcenses) => {
   if (!identifaite)
     return { StatusCode: 402, data: "identifiante not provider" };
-  console.log(idMat);
-  if (!idMat || !Date || !idStud || !cause)
-    return { StatusCode: 501, data: "you`ve insert all informations" };
-
-  const Abcense = {
+  if (!idMat || !Date || !idStud || idStud.length === 0)
+    return { StatusCode: 501, data: "you must insert all information!" };
+  // فلترة وتحويل المعرفات
+  const ids = idStud
+    .filter((id: any) => typeof id === "string" && id.length === 24)
+    .map((id: string) => new mongoose.Types.ObjectId(id));
+  console.log("🧩 Students IDs:", ids);
+  // إعداد بيانات الغياب
+  const newAbcenseData = {
     Date,
     cause,
     matieres: Array.isArray(idMat)
-      ? idMat.map((id) => ({ idMat: id }))
-      : [{ idMat }],
+      ? idMat
+          .filter((id) => typeof id === "string" && id.length === 24)
+          .map((id) => ({ idMat: new mongoose.Types.ObjectId(id) }))
+      : typeof idMat === "string" && idMat.length === 24
+      ? [{ idMat: new mongoose.Types.ObjectId(idMat) }]
+      : [],
   };
-  const result = await Abcensesmodel.findOne({ idStud });
 
-  if (!result) {
-    const inserTnewDate = await Abcensesmodel.create({
-      idStud,
-      Abcenses: [Abcense],
-    });
-    if (!inserTnewDate)
-      return { StatusCode: 404, data: "failed to register info...." };
-    await inserTnewDate.save();
-    return { StatusCode: 200, data: inserTnewDate };
-  }
-  result.Abcenses.push(Abcense);
-  await result.save();
+  // تسجيل الغياب لكل طالب
+  const promises = ids.map(async (studId: any) => {
+    let existing = await Abcensesmodel.findOne({ idStud: { $in: [studId] } });
+    if (existing) {
+      existing.Abcenses.push(newAbcenseData);
+      return existing.save();
+    } else {
+      return Abcensesmodel.create({
+        idStud: [studId],
+        Abcenses: [newAbcenseData],
+      });
+    }
+  });
+  const result = await Promise.all(promises);
+
   return { StatusCode: 200, data: result };
 };
+
 interface IgetAbce {
   identifaite: string;
 }
@@ -64,13 +75,28 @@ interface searchAbc {
 export const SearchAbcense = async ({ identifaite, search }: searchAbc) => {
   if (!identifaite)
     return { StatusCode: 402, data: "identifiante not provider" };
-  let gestAbc = await Abcensesmodel.find()
-    .populate({
-      path: "idStud",
-      match: { Name: { $regex: search, $options: "i" } },
-    })
-    .populate("Abcenses.matieres.idMat");
-  gestAbc = gestAbc.filter((name) => name.idStud != null);
-  if (!gestAbc) return { StatusCode: 404, data: "no data from searche" };
-  return { StatusCode: 200, data: gestAbc };
+
+  try {
+    // ⬅️ أولاً نلقاو الطلاب اللي الاسم تاعهم فيه الكلمة المبحوث عنها
+    const students = await Studentemodel.find({
+      Name: { $regex: search, $options: "i" },
+    }).select("_id");
+
+    if (!students.length) return { StatusCode: 200, data: "" };
+
+    // ⬅️ نجيب absences فقط للطلاب لي لقيناهم
+    const studentIds = students.map((s) => s._id);
+
+    const gestAbc = await Abcensesmodel.find({ idStud: { $in: studentIds } })
+      .populate("idStud") // يعمر الطالب كامل
+      .populate("Abcenses.matieres.idMat"); // يعمر المواد
+
+    if (!gestAbc.length)
+      return { StatusCode: 404, data: "Aucune absence trouvée" };
+
+    return { StatusCode: 200, data: gestAbc };
+  } catch (error) {
+    console.error("Erreur dans SearchAbcense:", error);
+    return { StatusCode: 500, data: "Erreur interne du serveur" };
+  }
 };

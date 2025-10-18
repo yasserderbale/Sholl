@@ -9,6 +9,7 @@ const route = express.Router();
 route.post("/Abcenses", validatejwt, async (req, res) => {
   const identifaite = (req as any).payload;
   const { idMat, Date, idStud, cause } = req.body;
+  console.log(req.body);
   const response = await RegistnewAbcense({
     identifaite,
     idMat,
@@ -25,7 +26,11 @@ route.get("/Abcenses", validatejwt, async (req, res) => {
 });
 route.get("/SearchAbc", validatejwt, async (req, res) => {
   const identifaite = (req as any).payload;
-  const search = req.query.name;
+  let search = req.query.search;
+  // if (!search || typeof search !== "string" || search.trim() === "") {
+  // search = ""; // أو تقدر تهمل البحث نهائياً
+  // }
+  console.log(search);
   const response = await SearchAbcense({ identifaite, search });
   res.status(response.StatusCode).json(response);
 });

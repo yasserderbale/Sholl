@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type FC, type PropsWithChildren, } from "react";
+import React, { createContext, useContext, useEffect, useState, type FC, type PropsWithChildren } from "react";
 interface Matiere {
   name: string,
   prix: number,
@@ -18,8 +18,9 @@ interface IContext {
   getStudentes: () => void,
   stude: any,
   seracheStud: (e: any) => Promise<any>,
-  getgroupes:()=>void,
-  groupe:any[]
+  getgroupes: () => void,
+  groupe: any[],
+  setgroupe: React.Dispatch<React.SetStateAction<any[]>>
 }
 const Authcontext = createContext<IContext>({
   tocken: null,
@@ -35,15 +36,16 @@ const Authcontext = createContext<IContext>({
   getStudentes: () => { },
   stude: [],
   seracheStud: async () => { },
-  getgroupes:async ()=> { },
-  groupe:[]
+  getgroupes: async () => { },
+  groupe: [],
+  setgroupe: () => { }
 })
 export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
   const [tocken, settocken] = useState<string | null>(localStorage.getItem("Tocken"))
   const [isAuth, setisAuth] = useState(!!tocken)
   const [mat, setmat] = useState<any[]>([])
   const [stude, setstud] = useState<any[]>([])
-  const [groupe,setgroupe] = useState<any[]>([])
+  const [groupe, setgroupe] = useState<any[]>([])
   const login = (identifiante: string, tocken: string) => {
     localStorage.setItem("Username", identifiante)
     localStorage.setItem("Tocken", tocken)
@@ -178,7 +180,6 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     if (tocken) {
       getStudentes()
     }
-
   }, [tocken])
   const seracheStud = async (value: any) => {
     if (!value) getStudentes()
@@ -199,26 +200,25 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     }
     setstud(response.data)
   }
-  const getgroupes = async ()=>{
-    const getgroupe = await fetch("http://localhost:3000/Groupes",{
-      headers:{
-        "Authorization":`Bearer ${tocken}`
+  const getgroupes = async () => {
+    const getgroupe = await fetch("http://localhost:3000/Groupes", {
+      headers: {
+        "Authorization": `Bearer ${tocken}`
       }
     })
-    const group =await getgroupe.json()
-    if(!group) {
+    const group = await getgroupe.json()
+    if (!group) {
       return
     }
     setgroupe(group.data)
   }
-   useEffect(() => {
+  useEffect(() => {
     if (tocken) {
       getgroupes()
     }
-
   }, [tocken])
   return (
-    <Authcontext.Provider value={{ login, tocken, isAuth, logoute, mat, addMat, DelatewoneMat, getOneMat, Searchonmat, updateone, getStudentes, stude, seracheStud,getgroupes,groupe }}>
+    <Authcontext.Provider value={{ login, tocken, isAuth, logoute, mat, addMat, DelatewoneMat, getOneMat, Searchonmat, updateone, getStudentes, stude, seracheStud, getgroupes, groupe, setgroupe }}>
       {children}
     </Authcontext.Provider>
   )

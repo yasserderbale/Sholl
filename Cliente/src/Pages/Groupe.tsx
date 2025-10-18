@@ -4,7 +4,6 @@ import {
   Box,
   Typography,
   TextField,
-  Button,
   Table,
   TableHead,
   TableRow,
@@ -12,31 +11,32 @@ import {
   TableBody,
   Paper,
   Modal,
-  Select,
-  OutlinedInput,
-  MenuItem,
   Snackbar,
   Alert,
-  type SelectChangeEvent,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
+  TableContainer
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Update } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { usAuth } from '../Context/AuthContext';
+import { Button, Stack } from "@mui/material";
+import { FileDownload } from "@mui/icons-material";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 export function Groupe() {
   const [idgroupe, setidgroupe] = useState<any>(null)
-  const { groupe, tocken } = usAuth()
-  const [Groupe, setGroupe] = useState<any[]>(groupe)
+  const [idliste, setidlist] = useState<any>(null)
+  const { groupe, tocken, setgroupe } = usAuth()
   const [idASupprimer, setIdsupprimer] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [liste, setliste] = useState<String[] | null>(null)
+  const [namgroupe, setnamegroupe] = useState("")
   const [toast, setToast] = useState<{ open: boolean, msg: string, type: 'success' | 'error' }>({ open: false, msg: "", type: "success" })
   useEffect(() => {
-    setGroupe(groupe)
+    setgroupe(groupe)
   }, [groupe])
   const Name = useRef<HTMLInputElement>(null)
   const nbr = useRef<HTMLInputElement>(null)
@@ -46,7 +46,6 @@ export function Groupe() {
     const name = Name.current?.value
     const nbrmax = nbr.current?.value
     const fraise = Friase.current?.value
-    console.log("avante", name, nbrmax, fraise)
     if (!name || !nbrmax || !fraise) {
       setToast({ open: true, msg: "saisr tous informations", type: "error" })
 
@@ -66,7 +65,7 @@ export function Groupe() {
       setShowModal(false)
       return
     }
-    setGroupe((prev) => [...prev, response.data])
+    setgroupe((prev) => [...prev, response.data])
     Name.current!.value = ""
     nbr.current!.value = ""
     Friase.current!.value = ""
@@ -82,10 +81,16 @@ export function Groupe() {
       }
     })
     const response = await Fetchgroupe.json()
-    Name.current!.value = response.data.name
-    nbr.current!.value = response.data.Nbrmax
-    Friase.current!.value = response.data.fraisscolaire
-    //  setongroupe(response.data)
+    if (!response) {
+      return
+    }
+    setnamegroupe(response.data.name)
+    if (Name.current) Name.current.value = response.data.name
+    if (nbr.current) nbr.current.value = response.data.Nbrmax
+    if (Friase.current) Friase.current.value = response.data.fraisscolaire
+    setliste(response.data.Studentid.map((namstud: any) => namstud.Name))
+    console.log(response.data)
+
   }
   const updateOne = async (event: React.FormEvent) => {
     event.preventDefault()
@@ -106,7 +111,7 @@ export function Groupe() {
 
       return
     }
-    setGroupe((prev) => prev.map((item) => item._id == idgroupe ? reponse.data : item))
+    setgroupe((prev) => prev.map((item) => item._id == idgroupe ? reponse.data : item))
     setidgroupe(null)
     setToast({ open: true, msg: "updating succed", type: "success" })
   }
@@ -123,7 +128,7 @@ export function Groupe() {
       setToast({ open: true, msg: `${response.data}`, type: "error" })
       return
     }
-    setGroupe((preve) => preve.filter((item) => item._id !== response.data._id))
+    setgroupe((preve) => preve.filter((item) => item._id !== response.data._id))
     setIdsupprimer(null)
     setToast({ open: true, msg: "delete succed", type: "success" })
   }
@@ -136,8 +141,36 @@ export function Groupe() {
 
     })
     const response = await searchone.json()
-    setGroupe(response.data)
+    setgroupe(response.data)
   }
+
+  const handleExportExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(liste.map((student, i) => ({
+      "#": i + 1,
+      "Nom": student
+    })));
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Etudiants");
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, `Liste_Etudiants_${namgroupe}.xlsx`);
+  };
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(14);
+    doc.text(`Liste des Étudiants ${namgroupe}`, 14, 15);
+    const tableData = liste.map((student, i) => [i + 1, student]);
+    autoTable(doc, {
+      head: [["#", "Nom de l'étudiant"]],
+      body: tableData,
+      startY: 25,
+    });
+
+    doc.save(`Liste_Etudiants_${namgroupe}.pdf`);
+  };
   return (
     <Box className={Styles.page} p={3}>
       <Snackbar anchorOrigin={{ vertical: "top", horizontal: "center" }} open={toast.open} autoHideDuration={3000} onClose={() => setToast({ ...toast, open: false })}>
@@ -169,7 +202,7 @@ export function Groupe() {
         </Button>
       </Box>
       {
-        Groupe.length == 0 ?
+        groupe.length == 0 ?
           <Typography variant="body1"
             align="center"
             color="textSecondary"
@@ -188,10 +221,10 @@ export function Groupe() {
                 </TableRow>
               </TableHead>
               <TableBody >
-                {Groupe.map((item) => (
+                {groupe.map((item) => (
                   <TableRow key={item._id}>
                     <TableCell>{item.name}</TableCell>
-                    <TableCell>0</TableCell>
+                    <TableCell>{item.Studentid.length}</TableCell>
                     <TableCell>0</TableCell>
                     <TableCell>{item.Nbrmax}</TableCell>
                     <TableCell>{item.fraisscolaire}.00DA</TableCell>
@@ -199,7 +232,7 @@ export function Groupe() {
                       <Box display="flex" gap={1}>
                         <Button onClick={() => { setidgroupe(item._id), getOnegroupe(item._id) }} startIcon={<Update />} size="small" variant="outlined">Modifier</Button>
                         <Button onClick={() => setIdsupprimer(item._id)} startIcon={<DeleteIcon />} size="small" variant="outlined" color="error">Supprimer</Button>
-                        <Button startIcon={<VisibilityIcon />} size="small" variant="outlined">Voir</Button>
+                        <Button onClick={() => { setidlist(item._id), getOnegroupe(item._id) }} startIcon={<VisibilityIcon />} size="small" variant="outlined">Voir</Button>
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -253,6 +286,100 @@ export function Groupe() {
             </Box>
           </Box>
         </Box>
+      </Modal>
+      {/* See List studnts */}
+      <Modal
+        open={!!idliste}
+        onClose={() => setidlist(null)}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <TableContainer
+          component={Paper}
+          sx={{
+            maxWidth: 700,
+            maxHeight: 450,
+            overflowY: "auto",
+            borderRadius: 3,
+            boxShadow: 8,
+            p: 2,
+          }}
+        >
+          <Typography
+            variant="h6"
+            align="center"
+            sx={{ mb: 2, fontWeight: "bold", color: "#333" }}
+          >
+            Liste des étudiants
+          </Typography>
+          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mb: 2 }}>
+            <Button
+              variant="contained"
+              color="success"
+              startIcon={<FileDownload />}
+              onClick={handleExportExcel}
+            >
+              Export Excel
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={<FileDownload />}
+              onClick={handleExportPDF}
+            >
+              Export PDF
+            </Button>
+          </Stack>
+          <Table stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1rem",
+                    backgroundColor: "#f5f5f5",
+                  }}
+                >
+                  #
+                </TableCell>
+                <TableCell
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1rem",
+                    backgroundColor: "#f5f5f5",
+                  }}
+                >
+                  Nom de l'étudiant
+                </TableCell>
+
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {liste && liste.length > 0 ? (
+                liste.map((student: any, index: number) => (
+                  <TableRow
+                    key={index}
+                    sx={{
+                      "&:hover": { backgroundColor: "#e8f0fe" },
+                    }}
+                  >
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{student}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={3} align="center">
+                    Aucun étudiant trouvé
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Modal>
     </Box>
   );

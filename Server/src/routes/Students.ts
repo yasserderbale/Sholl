@@ -11,13 +11,23 @@ import { validatejwt } from "../medallware/ValidateJWT";
 const route = express.Router();
 route.post("/Student", validatejwt, async (req, res) => {
   const identifinate = (req as any).payload;
-  const { Name, Age, Spécialité, Genre, Nivuea, Telephone, modules, Date } =
-    req.body;
+  const {
+    Name,
+    Age,
+    Spécialité,
+    Groupe,
+    Genre,
+    Nivuea,
+    Telephone,
+    modules,
+    Date,
+  } = req.body;
   const response = await Registerstud({
     identifinate,
     Name,
     Age,
     Spécialité,
+    Groupe,
     Genre,
     Nivuea,
     Telephone,
@@ -46,14 +56,24 @@ route.get("/Student/:id", validatejwt, async (req, res) => {
 route.put("/Student/:id", validatejwt, async (req, res) => {
   const identifinate = (req as any).payload;
   const idStud = req.params.id;
-  const { Name, Age, Spécialité, Genre, Nivuea, Telephone, modules, Date } =
-    req.body;
+  const {
+    Name,
+    Age,
+    Spécialité,
+    Groupe,
+    Genre,
+    Nivuea,
+    Telephone,
+    modules,
+    Date,
+  } = req.body;
   const response = await updateStudent({
     identifinate,
     idStud,
     Name,
     Age,
     Spécialité,
+    Groupe,
     Genre,
     Nivuea,
     Telephone,

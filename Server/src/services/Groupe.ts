@@ -1,6 +1,5 @@
 import { Groupemodel } from "../models/Groupe";
 interface IGroupe {
-  Studentid: any;
   identifaite: string;
   name: string;
   nbrmax: number;
@@ -11,10 +10,9 @@ export const AddnewGroup = async ({
   name,
   nbrmax,
   fraise,
-  Studentid,
 }: IGroupe) => {
   if (!identifaite) return { StatusCode: 401, data: "there isn`t tocken" };
-  if (!name || !nbrmax || !fraise || !Studentid)
+  if (!name || !nbrmax || !fraise)
     return { StatusCode: 501, data: "youve inser all informations" };
   const checkname = await Groupemodel.findOne({ name });
   if (checkname?.name == name)
@@ -23,7 +21,6 @@ export const AddnewGroup = async ({
     name,
     Nbrmax: nbrmax,
     fraisscolaire: fraise,
-    Studentid
   });
   if (!addnewgroup) return { StatusCode: 404, data: addnewgroup };
   return { StatusCode: 200, data: addnewgroup };
@@ -44,7 +41,7 @@ interface Iongroups {
 export const Getongroupe = async ({ identifaite, idgroupe }: Iongroups) => {
   if (!identifaite) return { StatusCode: 401, data: "there isn`t tocken" };
   if (!idgroupe) return { StatusCode: 401, data: "there isn`t of groupe " };
-  const fetchgrouid = await Groupemodel.findById(idgroupe);
+  const fetchgrouid = await Groupemodel.findById(idgroupe).populate("Studentid");
   return { StatusCode: 200, data: fetchgrouid };
 };
 export const deleteongroupe = async ({ identifaite, idgroupe }: Iongroups) => {

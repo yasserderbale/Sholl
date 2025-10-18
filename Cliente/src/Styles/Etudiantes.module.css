@@ -1,8 +1,9 @@
 .page {
   padding: 30px;
-  width: 80%;
-  font-family: 'Inter', sans-serif;
+  width: auto;
+  font-family: "Inter", sans-serif;
   color: #1e293b;
+  flex: 1 1 auto;
 }
 
 /* ✅ العنوان */
@@ -49,7 +50,9 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(37, 99, 235, 0.25);
 }
-
+.table {
+  width: 20px;
+}
 /* ✅ الجدول */
 .table th {
   background: #f3f4f6;
@@ -66,8 +69,6 @@
   color: #111827;
 }
 
-
-
 /* ✅ مودال Overlay */
 .modalOverlay,
 .modalOverlay1 {
@@ -82,21 +83,35 @@
 }
 
 /* ✅ مودال Content */
-.modalContent,
-.modalContent1 {
+.modalContent {
   background: #fff;
   padding: 34px;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 600px;
-  max-height: 85vh;
+  border-radius: 12px;
+  width: 630px;
+  max-height: 92vh;
   overflow-y: auto;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+  box-shadow: "0 4px 16px rgba(0, 0, 0, 0.1)";
+  animation: slideDown 0.3s ease;
+}
+.modalContent1 {
+  width: 900px;
+  background: #fff;
+  padding: 34px;
+  border-radius: 12px;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: "0 4px 16px rgba(0, 0, 0, 0.1)";
   animation: slideDown 0.3s ease;
 }
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-30px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ✅ عناوين المودال */
@@ -121,7 +136,6 @@
   outline: none;
   transition: border 0.25s, box-shadow 0.25s;
 }
-
 
 /* ✅ أزرار المودال */
 .modalActions,
@@ -181,9 +195,18 @@
   z-index: 2000;
 }
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-15px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes fadeOut {
-  to { opacity: 0; transform: translateY(-15px); }
+  to {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
 }

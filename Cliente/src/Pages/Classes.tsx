@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import Styles from '../Styles/Groupe.module.css';
+import React, { useState } from "react";
+import Styles from "../Styles/Groupe.module.css";
 import {
   Box,
   Typography,
@@ -15,125 +15,146 @@ import {
   Select,
   OutlinedInput,
   MenuItem,
-  Snackbar,
-  Alert,
   FormLabel,
   IconButton,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import { Update } from '@mui/icons-material';
-import DeleteIcon from '@mui/icons-material/Delete';
+  SelectChangeEvent,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import { Update } from "@mui/icons-material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs, { Dayjs } from "dayjs";
 
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import dayjs from 'dayjs';
+type Day = "Dimanche" | "Lundi" | "Mardi" | "Mercredi" | "Jeudi" | "Vendredi" | "Samedi";
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250,
-    },
-  },
-};
+interface Classe {
+  id: number | string;
+  name: string;
+  notes?: string;
+}
 
-const classNames = [
-  'فوج 01 علوم',
-  'فوج 02 رياضيات',
-  'فوج 03 آداب',
-  'فوج 04 تسيير واقتصاد',
-];
+interface GroupeItem {
+  id: number | string;
+  name: string;
+  dateDebut: string;
+  dateFin: string;
+  jours: Day[];
+}
 
-const daysOfWeek = ["Dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+type ClassGroupsState = Record<string | number, GroupeItem[]>;
 
-export function Classes() {
-  const [showAddClassModal, setShowAddClassModal] = useState(false);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [selectedClass, setSelectedClass] = useState(null);
-  const [scheduleLabel, setScheduleLabel] = useState('');
-  const [startTime, setStartTime] = useState(null);
-  const [endTime, setEndTime] = useState(null);
-  const [scheduleColor, setScheduleColor] = useState('#C2185BFF');
-  const [selectedDays, setSelectedDays] = useState([]);
-  const [classSchedules, setClassSchedules] = useState({});
+const daysOfWeek: Day[] = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
 
-  const [classes, setClasses] = useState([
-    { id: 1, name: 'الحجرة رقم 01', students: 40, notes: 'يحتوي على 40 تلميذ' },
-    { id: 2, name: 'الحجرة رقم 02', students: 20, notes: 'يحتوي على 20 تلميذ' },
-    { id: 3, name: 'الحجرة رقم 03', students: 20, notes: 'يحتوي على 20 تلميذ' },
+const Classes: React.FC = () => {
+  // === Classes ===
+  const [classes, setClasses] = useState<Classe[]>([
+    { id: 1, name: "الحجرة رقم 01", notes: "يحتوي على 40 تلميذ" },
+    { id: 2, name: "الحجرة رقم 02", notes: "يحتوي على 20 تلميذ" },
+    { id: 3, name: "الحجرة رقم 03", notes: "يحتوي على 20 تلميذ" },
   ]);
 
-  const handleOpenScheduleModal = (classData) => {
+  // === Groups ===
+  const [classGroups, setClassGroups] = useState<ClassGroupsState>({});
+  const [selectedClass, setSelectedClass] = useState<Classe | null>(null);
+  const [showGroupsModal, setShowGroupsModal] = useState(false);
+  const [showAddGroupModal, setShowAddGroupModal] = useState(false);
+
+  // === Add group states ===
+  const [groupName, setGroupName] = useState("");
+  const [dateDebut, setDateDebut] = useState<Dayjs | null>(null);
+  const [dateFin, setDateFin] = useState<Dayjs | null>(null);
+  const [selectedDays, setSelectedDays] = useState<Day[]>([]);
+
+  // === Add class states ===
+  const [showAddClassModal, setShowAddClassModal] = useState(false);
+  const [newClassName, setNewClassName] = useState("");
+  const [newClassNotes, setNewClassNotes] = useState("");
+
+  // === Functions ===
+  const handleOpenGroupsModal = (classData: Classe) => {
     setSelectedClass(classData);
-    setShowScheduleModal(true);
-    setScheduleLabel('');
-    setStartTime(null);
-    setEndTime(null);
-    setScheduleColor('#C2185BFF');
-    setSelectedDays([]);
+    setShowGroupsModal(true);
   };
 
-  const handleAddSchedule = (e) => {
+  const handleAddGroup = (e: React.FormEvent) => {
     e.preventDefault();
-    const newSchedule = {
-      [scheduleLabel]: {
-        startTime: startTime ? startTime.format('HH:mm') : null,
-        endTime: endTime ? endTime.format('HH:mm') : null,
-        days: selectedDays,
-      },
+    if (!selectedClass || !groupName || !dateDebut || !dateFin || selectedDays.length === 0) return;
+
+    const newGroup: GroupeItem = {
+      id: Date.now(),
+      name: groupName,
+      dateDebut: dateDebut.toISOString(),
+      dateFin: dateFin.toISOString(),
+      jours: selectedDays,
     };
-    setClassSchedules((prev) => ({
+
+    setClassGroups((prev) => ({
       ...prev,
-      [selectedClass.id]: {
-        ...prev[selectedClass.id],
-        ...newSchedule,
-      },
+      [selectedClass.id]: [...(prev[selectedClass.id] || []), newGroup],
     }));
-    setShowScheduleModal(false);
+
+    setGroupName("");
+    setDateDebut(null);
+    setDateFin(null);
+    setSelectedDays([]);
+    setShowAddGroupModal(false);
   };
 
-  const handleDaysChange = (event) => {
-    const { target: { value } } = event;
-    setSelectedDays(typeof value === 'string' ? value.split(',') : value);
+  const handleDeleteGroup = (classId: string | number, groupId: number | string) => {
+    setClassGroups((prev) => ({
+      ...prev,
+      [classId]: (prev[classId] || []).filter((g) => g.id !== groupId),
+    }));
+  };
+
+  const handleDaysChange = (e: SelectChangeEvent<Day[]>) => {
+    setSelectedDays(e.target.value as Day[]);
+  };
+
+  const handleAddClass = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newClassName) return;
+
+    const newClasse: Classe = {
+      id: Date.now(),
+      name: newClassName,
+      notes: newClassNotes,
+    };
+
+    setClasses(prev => [...prev, newClasse]);
+    setNewClassName("");
+    setNewClassNotes("");
+    setShowAddClassModal(false);
   };
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box className={Styles.page} p={3}>
-        <Typography variant="h4" className={Styles.title} gutterBottom>
-          Classes
-        </Typography>
-        <Box mb={2} display="flex" gap={2}>
-          <TextField
-            label="🔍 Rechercher par nom de département"
-            variant="outlined"
-            size="small"
-            sx={{ width: 250, background: "#f9fafb", borderRadius: "10px" }}
-          />
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h4" className={Styles.title}>Classes</Typography>
           <Button
-            startIcon={<AddIcon />}
             variant="contained"
-            color="primary"
-            sx={{ borderRadius: "10px", textTransform: "none" }}
+            startIcon={<AddIcon />}
+            className={Styles.btnAjouter}
             onClick={() => setShowAddClassModal(true)}
           >
             Ajouter une classe
           </Button>
         </Box>
-        <Paper sx={{ borderRadius: "12px", boxShadow: "0 6px 20px rgba(0,0,0,0.1)" }}>
-          <Table className={Styles.table}>
+
+        {/* === Classes Table === */}
+        <Paper sx={{ borderRadius: 2, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
+          <Table>
             <TableHead sx={{ background: "#f1f5f9" }}>
               <TableRow>
                 <TableCell>#</TableCell>
-                <TableCell> Nom Classe</TableCell>
-                <TableCell>commentaires</TableCell>
-                <TableCell> Actions</TableCell>
-                <TableCell colSpan={7}>Calendrier</TableCell>
+                <TableCell>Nom Classe</TableCell>
+                <TableCell>Commentaires</TableCell>
+                <TableCell>Actions</TableCell>
+                <TableCell>Calendrier</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -143,35 +164,40 @@ export function Classes() {
                   <TableCell>{classItem.name}</TableCell>
                   <TableCell>{classItem.notes}</TableCell>
                   <TableCell>
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleOpenScheduleModal(classItem)}
-                      title="جدولة"
-                    >
-                      <ScheduleIcon />
+                    <IconButton color="primary" onClick={() => handleOpenGroupsModal(classItem)} title="Voir les groupes">
+                      <VisibilityIcon />
                     </IconButton>
-                    <IconButton color="info" title="تعديل">
+                    <IconButton color="info" title="Modifier">
                       <Update />
                     </IconButton>
-                    <IconButton color="error" title="حذف">
+                    <IconButton color="error" title="Supprimer">
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
-                  <TableCell colSpan={7}>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 1, p: 1 }}>
-                      {daysOfWeek.map((day, index) => (
-                        <Box key={index} sx={{ textAlign: 'center' }}>
-                          <Typography variant="caption">{day}</Typography>
-                          <Box sx={{ height: 100, background: '#f0f0f0', borderRadius: 4, p: 1 }}>
-                            {classSchedules[classItem.id]?.[scheduleLabel]?.days?.includes(day) && (
-                              <Typography>
-                                {classSchedules[classItem.id]?.[scheduleLabel]?.startTime} -
-                                {classSchedules[classItem.id]?.[scheduleLabel]?.endTime}
-                              </Typography>
-                            )}
+
+                  {/* === Calendar preview === */}
+                  <TableCell>
+                    <Box display="grid" gridTemplateColumns="repeat(7, 1fr)" gap={1} p={1}>
+                      {daysOfWeek.map((day) => {
+                        const groups = classGroups[classItem.id] || [];
+                        const groupsForDay = groups.filter((gr) => gr.jours.includes(day));
+                        return (
+                          <Box key={day} sx={{ textAlign: "center" }}>
+                            <Typography variant="caption">{day}</Typography>
+                            <Box sx={{ height: 80, background: "#f0f0f0", borderRadius: 2, p: 1, overflowY: "auto" }}>
+                              {groupsForDay.length > 0 ? (
+                                groupsForDay.map((g) => (
+                                  <Typography key={g.id} variant="body2" sx={{ fontWeight: 700 }}>
+                                    {g.name} ({dayjs(g.dateDebut).format("DD/MM")} → {dayjs(g.dateFin).format("DD/MM")})
+                                  </Typography>
+                                ))
+                              ) : (
+                                <Typography variant="caption" color="text.secondary">—</Typography>
+                              )}
+                            </Box>
                           </Box>
-                        </Box>
-                      ))}
+                        );
+                      })}
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -180,110 +206,147 @@ export function Classes() {
           </Table>
         </Paper>
 
+        {/* === Add Class Modal === */}
         <Modal open={showAddClassModal} onClose={() => setShowAddClassModal(false)}>
           <Box className={Styles.modalOverlay}>
-            <Box className={Styles.modalContent} sx={{ maxWidth: "600px", borderRadius: "16px" }}>
-              <Typography variant="h6" fontWeight="bold" mb={2}>Ajouter une nouvelle classe</Typography>
-              <form className={Styles.form}>
-                <TextField label="Nom Clsse" required fullWidth margin="normal" />
-                <TextField type='number' label="Nombre maximum d'étudiants" required fullWidth margin="normal" />
-                <TextField type='number' label="Frais de scolarité" required fullWidth margin="normal" />
-                <Box mt={2} display="flex" justifyContent="flex-end" gap={2}>
-                  <Button variant="contained" type="submit">sauvegarder</Button>
-                  <Button variant="outlined" onClick={() => setShowAddClassModal(false)}>annuler</Button>
+            <Box className={Styles.modalContent}>
+              <Typography variant="h6" fontWeight="bold" mb={2}>Ajouter une classe</Typography>
+              <form onSubmit={handleAddClass} className={Styles.form}>
+                <TextField
+                  label="Nom de la classe"
+                  fullWidth
+                  required
+                  value={newClassName}
+                  onChange={(e) => setNewClassName(e.target.value)}
+                />
+                <TextField
+                  label="Commentaires"
+                  fullWidth
+                  value={newClassNotes}
+                  onChange={(e) => setNewClassNotes(e.target.value)}
+                  sx={{ mt: 2 }}
+                />
+                <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
+                  <Button variant="outlined" onClick={() => setShowAddClassModal(false)}>Annuler</Button>
+                  <Button variant="contained" type="submit">Sauvegarder</Button>
                 </Box>
               </form>
             </Box>
           </Box>
         </Modal>
 
-        <Modal open={showScheduleModal} onClose={() => setShowScheduleModal(false)}>
+        {/* === Voir Groups Modal === */}
+        <Modal open={showGroupsModal} onClose={() => setShowGroupsModal(false)}>
           <Box className={Styles.modalOverlay}>
-            <Box className={Styles.modalContent} sx={{ maxWidth: "600px", borderRadius: "16px" }}>
+            <Box className={Styles.modalContent}>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <Typography variant="h6" fontWeight="bold">Groupes de {selectedClass?.name}</Typography>
+                <Button variant="outlined" onClick={() => setShowGroupsModal(false)}>Annuler</Button>
+              </Box>
+
+              <Box mb={2}>
+                <Button variant="contained" startIcon={<AddIcon />} onClick={() => setShowAddGroupModal(true)}>
+                  Ajouter un groupe
+                </Button>
+              </Box>
+
+              {(selectedClass && (classGroups[selectedClass.id] || []).length === 0) ? (
+                <Typography color="text.secondary">Aucun groupe ajouté.</Typography>
+              ) : (
+                selectedClass && (
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Nom</TableCell>
+                        <TableCell>Date début</TableCell>
+                        <TableCell>Date fin</TableCell>
+                        <TableCell>Jours</TableCell>
+                        <TableCell>Action</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {classGroups[selectedClass.id].map((grp) => (
+                        <TableRow key={grp.id}>
+                          <TableCell>{grp.name}</TableCell>
+                          <TableCell>{dayjs(grp.dateDebut).format("DD/MM/YYYY")}</TableCell>
+                          <TableCell>{dayjs(grp.dateFin).format("DD/MM/YYYY")}</TableCell>
+                          <TableCell>{grp.jours.join(", ")}</TableCell>
+                          <TableCell>
+                            <Button size="small" color="primary" onClick={() => alert(JSON.stringify(grp, null, 2))}>
+                              Voir
+                            </Button>
+                            <IconButton color="error" onClick={() => handleDeleteGroup(selectedClass.id, grp.id)}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )
+              )}
+            </Box>
+          </Box>
+        </Modal>
+
+        {/* === Add Group Modal === */}
+        <Modal open={showAddGroupModal} onClose={() => setShowAddGroupModal(false)}>
+          <Box className={Styles.modalOverlay}>
+            <Box className={Styles.modalContent}>
               <Typography variant="h6" fontWeight="bold" mb={2}>
-                Calendare  {selectedClass ? selectedClass.name : ''}
+                Ajouter un groupe à {selectedClass?.name}
               </Typography>
-              <form onSubmit={handleAddSchedule} className={Styles.form}>
-                <FormLabel component="legend" sx={{ mt: 2, mb: 1 }}>Nom</FormLabel>
-                <Select
+
+              <form onSubmit={handleAddGroup} className={Styles.form}>
+                <TextField
+                  label="Nom du groupe"
                   fullWidth
-                  value={scheduleLabel}
-                  onChange={(e) => setScheduleLabel(e.target.value)}
-                  input={<OutlinedInput />}
-                  displayEmpty
-                  renderValue={(selected) => (selected.length === 0 ? <em>Choisissez une Nom</em> : selected)}
-                  MenuProps={MenuProps}
-                  sx={{ mb: 2 }}
-                >
-                  <MenuItem disabled value="">
-                    <em>Choisissez une Nom</em>
-                  </MenuItem>
-                  {classNames.map((name) => (
-                    <MenuItem key={name} value={name}>{name}</MenuItem>
-                  ))}
-                </Select>
+                  required
+                  value={groupName}
+                  onChange={(e) => setGroupName(e.target.value)}
+                />
 
-                <Box display="flex" gap={2} mb={2}>
-                  <TimePicker
-                    label="Heure de début"
-                    value={startTime}
-                    onChange={(newValue) => setStartTime(newValue)}
-                    renderInput={(params) => <TextField {...params} fullWidth />}
-                    sx={{ flex: 1 }}
+                <Box display="flex" gap={2} mt={1}>
+                  <DatePicker
+                    label="Date début"
+                    value={dateDebut}
+                    onChange={(newValue) => setDateDebut(newValue)}
+                    slots={{ textField: TextField }}
+                    enableAccessibleFieldDOMStructure={false}
                   />
-                  <TimePicker
-                    label="Heure de fin"
-                    value={endTime}
-                    onChange={(newValue) => setEndTime(newValue)}
-                    renderInput={(params) => <TextField {...params} fullWidth />}
-                    sx={{ flex: 1 }}
+                  <DatePicker
+                    label="Date fin"
+                    value={dateFin}
+                    onChange={(newValue) => setDateFin(newValue)}
+                    slots={{ textField: TextField }}
+                    enableAccessibleFieldDOMStructure={false}
                   />
-
                 </Box>
 
-                <FormLabel component="legend" sx={{ mb: 1 }}>Joures</FormLabel>
+                <FormLabel sx={{ mt: 2 }}>Jours</FormLabel>
                 <Select
                   fullWidth
                   multiple
                   value={selectedDays}
                   onChange={handleDaysChange}
-                  input={<OutlinedInput id="select-multiple-chip" label="Les jours" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {selected.map((value) => (
-                        <Button key={value} variant="outlined" size="small" sx={{ m: 0.5 }}>
-                          {value}
-                        </Button>
-                      ))}
-                    </Box>
-                  )}
-                  MenuProps={MenuProps}
+                  input={<OutlinedInput />}
+                  renderValue={(selected) => (selected as Day[]).join(", ")}
                 >
-                  {daysOfWeek.map((day) => (
-                    <MenuItem key={day} value={day}>{day}</MenuItem>
-                  ))}
+                  {daysOfWeek.map((d) => <MenuItem key={d} value={d}>{d}</MenuItem>)}
                 </Select>
 
                 <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
-                  <Button variant="contained" type="submit">sauvegarder</Button>
-                  <Button variant="outlined" onClick={() => setShowScheduleModal(false)}>annuler</Button>
+                  <Button variant="outlined" onClick={() => setShowAddGroupModal(false)}>Annuler</Button>
+                  <Button variant="contained" type="submit">Sauvegarder</Button>
                 </Box>
               </form>
             </Box>
           </Box>
         </Modal>
 
-        <Snackbar
-          open={false}
-          autoHideDuration={6000}
-          onClose={() => { }}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert onClose={() => { }} severity="success" sx={{ width: '100%' }}>
-            Les informations de la section ont été enregistrées
-          </Alert>
-        </Snackbar>
       </Box>
     </LocalizationProvider>
   );
-}
+};
+
+export default Classes;

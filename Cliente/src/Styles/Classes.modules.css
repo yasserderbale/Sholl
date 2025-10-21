@@ -5,15 +5,34 @@
   color: #1e293b;
 }
 
-/* ✅ العنوان */
+/* ✅ العنوان الرئيسي */
 .title {
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 25px;
   color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-/* ✅ البحث */
+/* ✅ زر إضافة Classe (أعلى الصفحة) */
+.btnTopAdd {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btnTopAdd:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.25);
+}
+
+/* ✅ مربع البحث */
 .searche {
   width: 260px;
   padding: 12px 14px;
@@ -34,22 +53,6 @@
   font-size: 14px;
 }
 
-/* ✅ زر إضافة */
-.btnAjouter {
-  background: linear-gradient(90deg, #2563eb, #1d4ed8);
-  color: #fff;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.btnAjouter:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.25);
-}
-
 /* ✅ الجدول */
 .table th {
   background: #f3f4f6;
@@ -66,11 +69,8 @@
   color: #111827;
 }
 
-
-
-/* ✅ مودال Overlay */
-.modalOverlay,
-.modalOverlay1 {
+/* ✅ مودال الخلفية */
+.modalOverlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
@@ -81,9 +81,8 @@
   z-index: 100;
 }
 
-/* ✅ مودال Content */
-.modalContent,
-.modalContent1 {
+/* ✅ مودال المحتوى */
+.modalContent {
   background: #fff;
   padding: 34px;
   border-radius: 16px;
@@ -99,7 +98,7 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ✅ عناوين المودال */
+/* ✅ عنوان المودال */
 .titre {
   text-align: center;
   font-weight: 700;
@@ -108,24 +107,48 @@
   margin-bottom: 28px;
 }
 
-/* ✅ فورم داخلي */
+/* ✅ فورم المودال */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 .form input,
 .form select {
+  border: 1px solid #d1d5db;
   border-radius: 12px;
+  padding: 10px 14px;
   font-size: 15px;
   outline: none;
   transition: border 0.25s, box-shadow 0.25s;
 }
+.form input:focus,
+.form select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
 
+/* ✅ حقول التاريخ */
+.dateFields {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.dateFields input {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 10px 14px;
+  background-color: #f9fafb;
+  font-size: 15px;
+}
+.dateFields input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
 
 /* ✅ أزرار المودال */
-.modalActions,
-.modalActions1 {
+.modalActions {
   display: flex;
   justify-content: flex-end;
   gap: 14px;
@@ -133,8 +156,7 @@
 }
 
 /* ✅ زر الإلغاء */
-.btnAnnuler,
-.btnAnnuler1 {
+.btnAnnuler {
   background: #e5e7eb;
   color: #374151;
   border: none;
@@ -144,14 +166,13 @@
   cursor: pointer;
   transition: background 0.2s;
 }
-.btnAnnuler:hover,
-.btnAnnuler1:hover {
+.btnAnnuler:hover {
   background: #d1d5db;
 }
 
-/* ✅ زر الحذف */
-.btnConfirmer1 {
-  background: linear-gradient(90deg, #ef4444, #dc2626);
+/* ✅ زر الحفظ */
+.btnConfirmer {
+  background: linear-gradient(90deg, #2563eb, #1d4ed8);
   color: #fff;
   border: none;
   padding: 10px 18px;
@@ -160,9 +181,9 @@
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
 }
-.btnConfirmer1:hover {
+.btnConfirmer:hover {
   transform: scale(1.05);
-  box-shadow: 0 5px 18px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 5px 18px rgba(37, 99, 235, 0.3);
 }
 
 /* ✅ Toast */

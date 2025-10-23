@@ -45,7 +45,6 @@ export const Abcenses = () => {
     new Map(mat.map((mats) => [mats.name, mats])).values()
   )
 
-  console.log(uniqueMats)
   const [showModal, setShowModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [idMat, setmodules] = useState<string[]>([]);

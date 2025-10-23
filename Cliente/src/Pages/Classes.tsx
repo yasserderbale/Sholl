@@ -3,7 +3,6 @@ import Styles from "../Styles/Groupe.module.css";
 import {
   Box,
   Typography,
-  TextField,
   Button,
   Table,
   TableHead,
@@ -17,7 +16,8 @@ import {
   MenuItem,
   FormLabel,
   IconButton,
-  SelectChangeEvent,
+  type SelectChangeEvent,
+  TextField,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -25,10 +25,18 @@ import { Update } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import dayjs, { Dayjs } from "dayjs";
+import { usAuth } from "../Context/AuthContext";
 
-type Day = "Dimanche" | "Lundi" | "Mardi" | "Mercredi" | "Jeudi" | "Vendredi" | "Samedi";
+type Day =
+  | "Dimanche"
+  | "Lundi"
+  | "Mardi"
+  | "Mercredi"
+  | "Jeudi"
+  | "Vendredi"
+  | "Samedi";
 
 interface Classe {
   id: number | string;
@@ -39,41 +47,47 @@ interface Classe {
 interface GroupeItem {
   id: number | string;
   name: string;
-  dateDebut: string;
-  dateFin: string;
+  heureDebut: string;
+  heureFin: string;
   jours: Day[];
 }
 
 type ClassGroupsState = Record<string | number, GroupeItem[]>;
 
-const daysOfWeek: Day[] = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+const daysOfWeek: Day[] = [
+  "Dimanche",
+  "Lundi",
+  "Mardi",
+  "Mercredi",
+  "Jeudi",
+  "Vendredi",
+  "Samedi",
+];
 
 const Classes: React.FC = () => {
-  // === Classes ===
+  const { groupe } = usAuth();
+
   const [classes, setClasses] = useState<Classe[]>([
     { id: 1, name: "الحجرة رقم 01", notes: "يحتوي على 40 تلميذ" },
     { id: 2, name: "الحجرة رقم 02", notes: "يحتوي على 20 تلميذ" },
     { id: 3, name: "الحجرة رقم 03", notes: "يحتوي على 20 تلميذ" },
   ]);
 
-  // === Groups ===
   const [classGroups, setClassGroups] = useState<ClassGroupsState>({});
   const [selectedClass, setSelectedClass] = useState<Classe | null>(null);
+
   const [showGroupsModal, setShowGroupsModal] = useState(false);
   const [showAddGroupModal, setShowAddGroupModal] = useState(false);
+  const [showAddClassModal, setShowAddClassModal] = useState(false);
 
-  // === Add group states ===
   const [groupName, setGroupName] = useState("");
-  const [dateDebut, setDateDebut] = useState<Dayjs | null>(null);
-  const [dateFin, setDateFin] = useState<Dayjs | null>(null);
+  const [heureDebut, setHeureDebut] = useState<Dayjs | null>(null);
+  const [heureFin, setHeureFin] = useState<Dayjs | null>(null);
   const [selectedDays, setSelectedDays] = useState<Day[]>([]);
 
-  // === Add class states ===
-  const [showAddClassModal, setShowAddClassModal] = useState(false);
   const [newClassName, setNewClassName] = useState("");
   const [newClassNotes, setNewClassNotes] = useState("");
 
-  // === Functions ===
   const handleOpenGroupsModal = (classData: Classe) => {
     setSelectedClass(classData);
     setShowGroupsModal(true);
@@ -81,13 +95,14 @@ const Classes: React.FC = () => {
 
   const handleAddGroup = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedClass || !groupName || !dateDebut || !dateFin || selectedDays.length === 0) return;
+    if (!selectedClass || !groupName || !heureDebut || !heureFin || selectedDays.length === 0)
+      return;
 
     const newGroup: GroupeItem = {
       id: Date.now(),
       name: groupName,
-      dateDebut: dateDebut.toISOString(),
-      dateFin: dateFin.toISOString(),
+      heureDebut: heureDebut.format("HH:mm"),
+      heureFin: heureFin.format("HH:mm"),
       jours: selectedDays,
     };
 
@@ -97,8 +112,8 @@ const Classes: React.FC = () => {
     }));
 
     setGroupName("");
-    setDateDebut(null);
-    setDateFin(null);
+    setHeureDebut(null);
+    setHeureFin(null);
     setSelectedDays([]);
     setShowAddGroupModal(false);
   };
@@ -124,7 +139,7 @@ const Classes: React.FC = () => {
       notes: newClassNotes,
     };
 
-    setClasses(prev => [...prev, newClasse]);
+    setClasses((prev) => [...prev, newClasse]);
     setNewClassName("");
     setNewClassNotes("");
     setShowAddClassModal(false);
@@ -133,19 +148,25 @@ const Classes: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box className={Styles.page} p={3}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h4" className={Styles.title}>Classes</Typography>
+        <Box display="flex" justifyContent="flex" mb={2} gap={2}>
+          <TextField
+            label="🔍 Rechercher par nom"
+            variant="outlined"
+            size="small"
+            sx={{ width: 250, background: "#f9fafb", borderRadius: "10px" }}
+          />
           <Button
             variant="contained"
+            color="primary"
+            sx={{ borderRadius: "10px", textTransform: "none" }}
             startIcon={<AddIcon />}
-            className={Styles.btnAjouter}
             onClick={() => setShowAddClassModal(true)}
           >
-            Ajouter une classe
+            Ajouter Classe
           </Button>
         </Box>
 
-        {/* === Classes Table === */}
+        {/* === جدول الكلاسات === */}
         <Paper sx={{ borderRadius: 2, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
           <Table>
             <TableHead sx={{ background: "#f1f5f9" }}>
@@ -154,7 +175,6 @@ const Classes: React.FC = () => {
                 <TableCell>Nom Classe</TableCell>
                 <TableCell>Commentaires</TableCell>
                 <TableCell>Actions</TableCell>
-                <TableCell>Calendrier</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -164,118 +184,72 @@ const Classes: React.FC = () => {
                   <TableCell>{classItem.name}</TableCell>
                   <TableCell>{classItem.notes}</TableCell>
                   <TableCell>
-                    <IconButton color="primary" onClick={() => handleOpenGroupsModal(classItem)} title="Voir les groupes">
+                    <IconButton color="primary" onClick={() => handleOpenGroupsModal(classItem)}>
                       <VisibilityIcon />
                     </IconButton>
-                    <IconButton color="info" title="Modifier">
+                    <IconButton color="info">
                       <Update />
                     </IconButton>
-                    <IconButton color="error" title="Supprimer">
+                    <IconButton color="error">
                       <DeleteIcon />
                     </IconButton>
-                  </TableCell>
-
-                  {/* === Calendar preview === */}
-                  <TableCell>
-                    <Box display="grid" gridTemplateColumns="repeat(7, 1fr)" gap={1} p={1}>
-                      {daysOfWeek.map((day) => {
-                        const groups = classGroups[classItem.id] || [];
-                        const groupsForDay = groups.filter((gr) => gr.jours.includes(day));
-                        return (
-                          <Box key={day} sx={{ textAlign: "center" }}>
-                            <Typography variant="caption">{day}</Typography>
-                            <Box sx={{ height: 80, background: "#f0f0f0", borderRadius: 2, p: 1, overflowY: "auto" }}>
-                              {groupsForDay.length > 0 ? (
-                                groupsForDay.map((g) => (
-                                  <Typography key={g.id} variant="body2" sx={{ fontWeight: 700 }}>
-                                    {g.name} ({dayjs(g.dateDebut).format("DD/MM")} → {dayjs(g.dateFin).format("DD/MM")})
-                                  </Typography>
-                                ))
-                              ) : (
-                                <Typography variant="caption" color="text.secondary">—</Typography>
-                              )}
-                            </Box>
-                          </Box>
-                        );
-                      })}
-                    </Box>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </Paper>
-
-        {/* === Add Class Modal === */}
-        <Modal open={showAddClassModal} onClose={() => setShowAddClassModal(false)}>
-          <Box className={Styles.modalOverlay}>
-            <Box className={Styles.modalContent}>
-              <Typography variant="h6" fontWeight="bold" mb={2}>Ajouter une classe</Typography>
-              <form onSubmit={handleAddClass} className={Styles.form}>
-                <TextField
-                  label="Nom de la classe"
-                  fullWidth
-                  required
-                  value={newClassName}
-                  onChange={(e) => setNewClassName(e.target.value)}
-                />
-                <TextField
-                  label="Commentaires"
-                  fullWidth
-                  value={newClassNotes}
-                  onChange={(e) => setNewClassNotes(e.target.value)}
-                  sx={{ mt: 2 }}
-                />
-                <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
-                  <Button variant="outlined" onClick={() => setShowAddClassModal(false)}>Annuler</Button>
-                  <Button variant="contained" type="submit">Sauvegarder</Button>
-                </Box>
-              </form>
-            </Box>
-          </Box>
-        </Modal>
-
-        {/* === Voir Groups Modal === */}
+        {/* === Voir les groupes === */}
         <Modal open={showGroupsModal} onClose={() => setShowGroupsModal(false)}>
           <Box className={Styles.modalOverlay}>
             <Box className={Styles.modalContent}>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Typography variant="h6" fontWeight="bold">Groupes de {selectedClass?.name}</Typography>
-                <Button variant="outlined" onClick={() => setShowGroupsModal(false)}>Annuler</Button>
-              </Box>
-
-              <Box mb={2}>
-                <Button variant="contained" startIcon={<AddIcon />} onClick={() => setShowAddGroupModal(true)}>
+                <Typography variant="h6" fontWeight="bold">
+                  Groupes de {selectedClass?.name}
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={() => setShowAddGroupModal(true)}
+                  startIcon={<AddIcon />}
+                >
                   Ajouter un groupe
                 </Button>
               </Box>
 
               {(selectedClass && (classGroups[selectedClass.id] || []).length === 0) ? (
-                <Typography color="text.secondary">Aucun groupe ajouté.</Typography>
+                <Typography color="text.secondary" mb={3}>
+                  Aucun groupe ajouté.
+                </Typography>
               ) : (
                 selectedClass && (
                   <Table>
                     <TableHead>
                       <TableRow>
                         <TableCell>Nom</TableCell>
-                        <TableCell>Date début</TableCell>
-                        <TableCell>Date fin</TableCell>
+                        <TableCell>Heure début</TableCell>
+                        <TableCell>Heure fin</TableCell>
                         <TableCell>Jours</TableCell>
-                        <TableCell>Action</TableCell>
+                        <TableCell>Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {classGroups[selectedClass.id].map((grp) => (
                         <TableRow key={grp.id}>
                           <TableCell>{grp.name}</TableCell>
-                          <TableCell>{dayjs(grp.dateDebut).format("DD/MM/YYYY")}</TableCell>
-                          <TableCell>{dayjs(grp.dateFin).format("DD/MM/YYYY")}</TableCell>
+                          <TableCell>{grp.heureDebut}</TableCell>
+                          <TableCell>{grp.heureFin}</TableCell>
                           <TableCell>{grp.jours.join(", ")}</TableCell>
                           <TableCell>
-                            <Button size="small" color="primary" onClick={() => alert(JSON.stringify(grp, null, 2))}>
-                              Voir
-                            </Button>
-                            <IconButton color="error" onClick={() => handleDeleteGroup(selectedClass.id, grp.id)}>
+                            <IconButton color="primary">
+                              <VisibilityIcon />
+                            </IconButton>
+                            <IconButton color="info">
+                              <Update />
+                            </IconButton>
+                            <IconButton
+                              color="error"
+                              onClick={() => handleDeleteGroup(selectedClass.id, grp.id)}
+                            >
                               <DeleteIcon />
                             </IconButton>
                           </TableCell>
@@ -285,11 +259,23 @@ const Classes: React.FC = () => {
                   </Table>
                 )
               )}
+
+              {/* === زر الإلغاء === */}
+              <Box mt={3} display="flex" justifyContent="flex-end">
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  onClick={() => setShowGroupsModal(false)}
+                >
+                  Annuler
+                </Button>
+              </Box>
             </Box>
           </Box>
         </Modal>
 
-        {/* === Add Group Modal === */}
+
+        {/* === Ajouter un groupe === */}
         <Modal open={showAddGroupModal} onClose={() => setShowAddGroupModal(false)}>
           <Box className={Styles.modalOverlay}>
             <Box className={Styles.modalContent}>
@@ -298,28 +284,34 @@ const Classes: React.FC = () => {
               </Typography>
 
               <form onSubmit={handleAddGroup} className={Styles.form}>
-                <TextField
-                  label="Nom du groupe"
+                <FormLabel>Nom du groupe</FormLabel>
+                <Select
                   fullWidth
                   required
                   value={groupName}
                   onChange={(e) => setGroupName(e.target.value)}
-                />
+                >
+                  {groupe && groupe.length > 0 ? (
+                    groupe.map((g: any) => (
+                      <MenuItem key={g._id} value={g.name}>
+                        {g.name} — ({g.Nbrmax} élèves)
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>Aucun groupe disponible</MenuItem>
+                  )}
+                </Select>
 
-                <Box display="flex" gap={2} mt={1}>
-                  <DatePicker
-                    label="Date début"
-                    value={dateDebut}
-                    onChange={(newValue) => setDateDebut(newValue)}
-                    slots={{ textField: TextField }}
-                    enableAccessibleFieldDOMStructure={false}
+                <Box display="flex" gap={2} mt={2}>
+                  <TimePicker
+                    label="Heure début"
+                    value={heureDebut}
+                    onChange={(newValue) => setHeureDebut(newValue)}
                   />
-                  <DatePicker
-                    label="Date fin"
-                    value={dateFin}
-                    onChange={(newValue) => setDateFin(newValue)}
-                    slots={{ textField: TextField }}
-                    enableAccessibleFieldDOMStructure={false}
+                  <TimePicker
+                    label="Heure fin"
+                    value={heureFin}
+                    onChange={(newValue) => setHeureFin(newValue)}
                   />
                 </Box>
 
@@ -332,18 +324,71 @@ const Classes: React.FC = () => {
                   input={<OutlinedInput />}
                   renderValue={(selected) => (selected as Day[]).join(", ")}
                 >
-                  {daysOfWeek.map((d) => <MenuItem key={d} value={d}>{d}</MenuItem>)}
+                  {daysOfWeek.map((d) => (
+                    <MenuItem key={d} value={d}>
+                      {d}
+                    </MenuItem>
+                  ))}
                 </Select>
 
                 <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
-                  <Button variant="outlined" onClick={() => setShowAddGroupModal(false)}>Annuler</Button>
-                  <Button variant="contained" type="submit">Sauvegarder</Button>
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    onClick={() => setShowAddGroupModal(false)}
+                  >
+                    Annuler
+                  </Button>
+                  <Button variant="contained" type="submit">
+                    Sauvegarder
+                  </Button>
                 </Box>
               </form>
             </Box>
           </Box>
         </Modal>
 
+        {/* === Ajouter une Classe === */}
+        <Modal open={showAddClassModal} onClose={() => setShowAddClassModal(false)}>
+          <Box className={Styles.modalOverlay}>
+            <Box className={Styles.modalContent}>
+              <Typography variant="h6" fontWeight="bold" mb={2}>
+                Ajouter une nouvelle Classe
+              </Typography>
+
+              <form onSubmit={handleAddClass} className={Styles.form}>
+                <TextField
+                  label="Nom de la Classe"
+                  fullWidth
+                  required
+                  value={newClassName}
+                  onChange={(e) => setNewClassName(e.target.value)}
+                />
+                <TextField
+                  label="Notes"
+                  fullWidth
+                  multiline
+                  rows={3}
+                  value={newClassNotes}
+                  onChange={(e) => setNewClassNotes(e.target.value)}
+                />
+
+                <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    onClick={() => setShowAddClassModal(false)}
+                  >
+                    Annuler
+                  </Button>
+                  <Button variant="contained" type="submit">
+                    Ajouter
+                  </Button>
+                </Box>
+              </form>
+            </Box>
+          </Box>
+        </Modal>
       </Box>
     </LocalizationProvider>
   );

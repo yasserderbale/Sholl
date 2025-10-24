@@ -10,7 +10,7 @@ const ClasseSchema = new Schema<IClasse>(
   {
     name: { type: String, required: true },
     notes: { type: String },
-    groupes: [{ type: Schema.Types.ObjectId, ref: "Groupe" }],
+    groupes: [{ type: Schema.Types.ObjectId, ref: "GroupeTims" }],
   },
   { timestamps: true }
 );

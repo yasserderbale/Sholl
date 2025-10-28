@@ -1,11 +1,15 @@
 import mongoose from "mongoose";
 import Classe, { IClasse } from "../models/Classe";
 import Groupe from "../models/GroupeTimes";
+import path from "path";
 
 export const getAllClasses = async (identifaite: string) => {
   if (!identifaite)
     return { StatusCode: 402, data: "identifiante not provider" };
-  const classes = await Classe.find().populate("groupes");
+  const classes = await Classe.find().populate({
+    path: "groupes",
+    populate: { path: "groupeId" },
+  });
   return { StatusCode: 200, data: classes };
 };
 export const getClasseById = async (id: string) => {
@@ -28,7 +32,7 @@ export const addClasse = async (
   if (!identifaite)
     return { StatusCode: 402, data: "identifiante not provider" };
 
-  const newClass = new Classe({name:nom, notes:description });
+  const newClass = new Classe({ name: nom, notes: description });
   await newClass.save();
   return { StatusCode: 200, data: newClass };
 };
@@ -72,7 +76,10 @@ export const deleteClasse = async (identifaite: string, classId: string) => {
 };
 export const getGroupesByClasse = async (id: string) => {
   try {
-    const classe = await Classe.findById(id).populate("groupes");
+    const classe = await Classe.findById(id).populate({
+      path: "groupes",
+      populate: { path: "groupeId" },
+    });
     if (!classe) {
       return { StatusCode: 404, data: "Classe non trouvée" };
     }

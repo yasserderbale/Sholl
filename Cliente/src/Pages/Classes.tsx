@@ -51,6 +51,7 @@ interface GroupeItem {
   heureDebut: string;
   heureFin: string;
   jours: Day[];
+  groupeId: any
 }
 
 type ClassGroupsState = Record<string, GroupeItem[]>;
@@ -96,7 +97,6 @@ const Classes: React.FC = () => {
     message: "",
     severity: "success" as "success" | "error",
   });
-
   const API_URL = "http://localhost:3000";
 
   // === Fetch All Classes ===
@@ -122,6 +122,7 @@ const Classes: React.FC = () => {
       if (data.StatusCode === 200) {
         setClassGroups((prev) => ({ ...prev, [classeId]: data.data }));
       }
+      console.log(classGroups)
     } catch (err) {
       console.error("Erreur chargement groupes:", err);
     }
@@ -237,8 +238,8 @@ const Classes: React.FC = () => {
   const handleSubmitGroup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedClass || !groupName || !heureDebut || !heureFin) return;
-
     const selectedG = groupe.find((g: any) => g.name === groupName);
+    console.log(selectedG)
     if (!selectedG)
       return setSnackbar({
         open: true,
@@ -314,7 +315,7 @@ const Classes: React.FC = () => {
   };
 
   const handleEditGroup = (grp: GroupeItem) => {
-    setGroupName(grp.name);
+    setGroupName(grp.groupeId.name);
     setHeureDebut(dayjs(grp.heureDebut, "HH:mm"));
     setHeureFin(dayjs(grp.heureFin, "HH:mm"));
     setSelectedDays(grp.jours);
@@ -452,7 +453,7 @@ const Classes: React.FC = () => {
                   {selectedClass &&
                     classGroups[selectedClass._id]?.map((g) => (
                       <TableRow key={g._id}>
-                        <TableCell>{g.name}</TableCell>
+                        <TableCell>{g.groupeId.name}</TableCell>
                         <TableCell>{g.heureDebut}</TableCell>
                         <TableCell>{g.heureFin}</TableCell>
                         <TableCell>{g.jours.join(", ")}</TableCell>
@@ -483,24 +484,30 @@ const Classes: React.FC = () => {
             <Box className={Styles.modalContent}>
               <Typography variant="h6" mb={2}>
                 {isEditingGroup
-                  ? "Modifier Groupe"
+                  ? `Modifier Groupe ${groupName}`
                   : `Ajouter Groupe à ${selectedClass?.name}`}
               </Typography>
 
               <form onSubmit={handleSubmitGroup}>
-                <FormLabel>Nom du groupe</FormLabel>
-                <Select
-                  fullWidth
-                  value={groupName}
-                  onChange={(e) => setGroupName(e.target.value)}
-                >
-                  {groupe?.map((g: any) => (
-                    <MenuItem key={g._id} value={g.name}>
-                      {g.name} — ({g.Nbrmax} élèves)
-                    </MenuItem>
-                  ))}
-                </Select>
+                {/* === Nom du groupe === */}
+                {!isEditingGroup && ( // 👈 نخبي الـ Select كي نكون في وضع Modifier
+                  <>
+                    <FormLabel>Nom du groupe</FormLabel>
+                    <Select
+                      fullWidth
+                      value={groupName}
+                      onChange={(e) => setGroupName(e.target.value)}
+                    >
+                      {groupe?.map((g: any) => (
+                        <MenuItem key={g._id} value={g.name}>
+                          {g.name} — ({g.Nbrmax} élèves)
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </>
+                )}
 
+                {/* === Time pickers === */}
                 <Box display="flex" gap={2} mt={2}>
                   <TimePicker
                     label="Heure début"
@@ -514,6 +521,7 @@ const Classes: React.FC = () => {
                   />
                 </Box>
 
+                {/* === Jours === */}
                 <FormLabel sx={{ mt: 2 }}>Jours</FormLabel>
                 <Select
                   fullWidth
@@ -530,6 +538,7 @@ const Classes: React.FC = () => {
                   ))}
                 </Select>
 
+                {/* === Boutons === */}
                 <Box display="flex" justifyContent="flex-end" gap={2} mt={3}>
                   <Button variant="outlined" onClick={() => setShowAddGroupModal(false)}>
                     Annuler

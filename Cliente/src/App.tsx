@@ -15,7 +15,7 @@ import { AuthProvider } from "./Context/AuthContext";
 import { ProtectedRoute } from "./Pages/ProtectedRoute";
 import { Groupe } from "./Pages/Groupe";
 import Classes from './Pages/Classes'
-import { Temps } from './Pages/Temps'
+import  {Temps}  from './Pages/Temps'
 import { Profes } from './Pages/Profes'
 function App() {
   return (

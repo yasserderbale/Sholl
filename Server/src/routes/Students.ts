@@ -6,7 +6,7 @@ import {
   Registerstud,
   SearchStudentes,
   updateStudent,
-} from "../services/Registerstud";
+} from "../services/RegisterstudSqlite";
 import { validatejwt } from "../medallware/ValidateJWT";
 const route = express.Router();
 route.post("/Student", validatejwt, async (req, res) => {

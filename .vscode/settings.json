@@ -1,0 +1,13 @@
+{
+  // Ensure the VS Code integrated terminal has the nvm/node path so `node` and `npm` are available
+  "terminal.integrated.env.windows": {
+    "PATH": "C:\\Users\\Lenovo\\AppData\\Local\\nodejs;${env:PATH}"
+  },
+  // Use PowerShell as the default integrated terminal (matches user's workflow)
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+    }
+  }
+}

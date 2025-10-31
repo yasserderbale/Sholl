@@ -29,7 +29,7 @@ import autoTable from "jspdf-autotable";
 export function Groupe() {
   const [idgroupe, setidgroupe] = useState<any>(null)
   const [idliste, setidlist] = useState<any>(null)
-  const { groupe, tocken, setgroupe } = usAuth()
+  const { groupe, tocken, setgroupe, stude } = usAuth()
   const [idASupprimer, setIdsupprimer] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [liste, setliste] = useState<String[] | null>(null)
@@ -88,7 +88,12 @@ export function Groupe() {
     if (Name.current) Name.current.value = response.data.name
     if (nbr.current) nbr.current.value = response.data.Nbrmax
     if (Friase.current) Friase.current.value = response.data.fraisscolaire
-    setliste(response.data.Studentid.map((namstud: any) => namstud.Name))
+    // Studentid is array of student IDs in SQLite; map to names from context 'stude'
+    setliste(
+      (response.data.Studentid || [])
+        .map((sid: string) => (stude || []).find((s: any) => (s as any).id === sid)?.Name || null)
+        .filter(Boolean)
+    )
     console.log(response.data)
 
   }
@@ -111,7 +116,7 @@ export function Groupe() {
 
       return
     }
-    setgroupe((prev) => prev.map((item) => item._id == idgroupe ? reponse.data : item))
+    setgroupe((prev) => prev.map((item) => item.id == idgroupe ? reponse.data : item))
     setidgroupe(null)
     setToast({ open: true, msg: "updating succed", type: "success" })
   }
@@ -128,7 +133,7 @@ export function Groupe() {
       setToast({ open: true, msg: `${response.data}`, type: "error" })
       return
     }
-    setgroupe((preve) => preve.filter((item) => item._id !== response.data._id))
+    setgroupe((preve) => preve.filter((item) => item.id !== idASupprimer))
     setIdsupprimer(null)
     setToast({ open: true, msg: "delete succed", type: "success" })
   }
@@ -222,7 +227,7 @@ export function Groupe() {
               </TableHead>
               <TableBody >
                 {groupe.map((item) => (
-                  <TableRow key={item._id}>
+                  <TableRow key={item.id}>
                     <TableCell>{item.name}</TableCell>
                     <TableCell>{item.Studentid.length}</TableCell>
                     <TableCell>0</TableCell>
@@ -230,9 +235,9 @@ export function Groupe() {
                     <TableCell>{item.fraisscolaire}.00DA</TableCell>
                     <TableCell>
                       <Box display="flex" gap={1}>
-                        <Button onClick={() => { setidgroupe(item._id), getOnegroupe(item._id) }} startIcon={<Update />} size="small" variant="outlined">Modifier</Button>
-                        <Button onClick={() => setIdsupprimer(item._id)} startIcon={<DeleteIcon />} size="small" variant="outlined" color="error">Supprimer</Button>
-                        <Button onClick={() => { setidlist(item._id), getOnegroupe(item._id) }} startIcon={<VisibilityIcon />} size="small" variant="outlined">Voir</Button>
+                        <Button onClick={() => { setidgroupe(item.id), getOnegroupe(item.id) }} startIcon={<Update />} size="small" variant="outlined">Modifier</Button>
+                        <Button onClick={() => setIdsupprimer(item.id)} startIcon={<DeleteIcon />} size="small" variant="outlined" color="error">Supprimer</Button>
+                        <Button onClick={() => { setidlist(item.id), getOnegroupe(item.id) }} startIcon={<VisibilityIcon />} size="small" variant="outlined">Voir</Button>
                       </Box>
                     </TableCell>
                   </TableRow>

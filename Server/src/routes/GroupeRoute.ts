@@ -7,7 +7,7 @@ import {
   getGroupeById,
   searchGroupeTims,
   updateGroupeTim,
-} from "../services/GroupeService";
+} from "../services/GroupeTimesSqlite";
 const router = express.Router();
 router.post("/AddGroupe", validatejwt, async (req, res) => {
   const identifaite = (req as any).payload;

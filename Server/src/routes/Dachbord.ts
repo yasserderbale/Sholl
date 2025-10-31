@@ -1,6 +1,6 @@
 import express from "express";
 import { validatejwt } from "../medallware/ValidateJWT";
-import { StatistiqDachborde } from "../services/Dachborde";
+import { StatistiqDachborde } from "../services/DachbordeSqlite";
 const app = express.Router();
 app.get("/Dachbord", validatejwt, async (req, res) => {
   const identifaite = (req as any).payload;

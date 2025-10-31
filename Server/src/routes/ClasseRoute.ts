@@ -7,7 +7,7 @@ import {
   getClasseById,
   getGroupesByClasse,
   searchClasse,
-} from "../services/ClassService";
+} from "../services/ClassServiceSqlite";
 import { validatejwt } from "../medallware/ValidateJWT";
 const router = express.Router();
 router.get("/AllClasses", validatejwt, async (req, res) => {

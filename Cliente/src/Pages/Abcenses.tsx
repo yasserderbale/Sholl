@@ -1,385 +1,647 @@
-import React, { useEffect, useRef, useState } from "react";
-import styles from "../Styles/Abcenses.module.css";
+import { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
-  TextField,
   Button,
-  Paper,
+  Checkbox,
+  Chip,
+  IconButton,
   Modal,
-  TableContainer,
+  TextField,
   Table,
+  TableBody,
+  TableCell,
+  TableContainer,
   TableHead,
   TableRow,
-  TableCell,
-  TableBody,
+  Paper,
   Select,
   MenuItem,
-  OutlinedInput,
-  type SelectChangeEvent,
+  FormControl,
+  FormControlLabel,
+  InputLabel,
   Snackbar,
   Alert,
-} from "@mui/material";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import AddIcon from "@mui/icons-material/Add";
-import { usAuth } from "../Context/AuthContext";
+  TablePagination,
+  InputAdornment
+} from '@mui/material';
+import {
+  Add,
+  Search,
+  Close as CloseIcon,
+  Edit,
+  Delete,
+  Visibility,
+  ArrowBack
+} from '@mui/icons-material'; // Ajout de ArrowBack
+import { usAuth } from '../Context/AuthContext';
 
-const ITEM_HEIGHT = 48;
-const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-  PaperProps: {
-    style: { maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP },
-  },
+// Types
+type Student = {
+  id: string;
+  Name: string;
 };
 
-export const Abcenses = () => {
+type Group = {
+  id: string;
+  name: string;
+  Studentid: string[];
+};
 
+type Absence = {
+  id: string;
+  studentId: string[]; // Toujours tableau
+  date: string;
+  reason: string;
+  idMat?: string[];
+};
+
+const Abcenses = () => {
+  const { groupe, stude, tocken } = usAuth() as {
+    groupe: Group[];
+    stude: Student[];
+    tocken: string;
+  };
+
+  const [openModal, setOpenModal] = useState(false);
+  const [openStudentListModal, setOpenStudentListModal] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<string>('');
+  const [tempSelectedGroup, setTempSelectedGroup] = useState<string>('');
+  const [students, setStudents] = useState<Student[]>([]);
+  const [absences, setAbsences] = useState<Absence[]>([]);
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [selectedAbsence, setSelectedAbsence] = useState<Absence | null>(null);
+  const [date, setDate] = useState<string>('');
+  const [reason, setReason] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [viewMode, setViewMode] = useState<'list' | 'details'>('list');
+  const [editingAbsence, setEditingAbsence] = useState(false);
   const [toast, setToast] = useState<{
     open: boolean;
     message: string;
-    severity: "success" | "error" | "info" | "warning";
-  }>({ open: false, message: "", severity: "success" });
+    severity: 'success' | 'error' | 'info' | 'warning';
+  }>({ open: false, message: '', severity: 'success' });
 
-  const { stude, mat, tocken, groupe } = usAuth()
-  const uniqueMats = Array.from(
-    new Map(mat.map((mats) => [mats.name, mats])).values()
-  )
+  // Filtrage
+  const filteredGroups = useMemo(() => {
+    if (!searchTerm) return groupe;
+    return groupe.filter(g => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  }, [groupe, searchTerm]);
 
-  const [showModal, setShowModal] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<any>(null);
-  const [idMat, setmodules] = useState<string[]>([]);
-  const [abcense, setabcense] = useState<any[]>([]);
-  const [namsstud, setnamsstud] = useState<any[]>([]); // array of student objects populated from backend
-  const date = useRef<HTMLInputElement>(null);
-  const caus = useRef<HTMLInputElement>(null);
+  const filteredStudents = useMemo(() => {
+    if (!selectedGroup) return [];
+    const group = groupe.find(g => g.id === selectedGroup);
+    if (!group) return [];
+    let result = stude.filter(s => group.Studentid.includes(s.id));
+    if (searchTerm) {
+      result = result.filter(s => s.Name.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+    return result;
+  }, [selectedGroup, groupe, stude, searchTerm]);
 
-  // multiple selected student IDs (strings)
-  const [manystud, setmanystud] = useState<string[]>([]);
+  // Chargement des étudiants du groupe
+  useEffect(() => {
+    if (selectedGroup) {
+      const group = groupe.find(g => g.id === selectedGroup);
+      if (group) {
+        setStudents(stude.filter(s => group.Studentid.includes(s.id)));
+      } else {
+        setStudents([]);
+      }
+    } else {
+      setStudents([]);
+    }
+  }, [selectedGroup, groupe, stude]);
+
+  // Chargement des absences
+  const fetchAbsences = async () => {
+    if (!tocken) return;
+    try {
+      const res = await fetch('http://localhost:3000/Abcenses', {
+        headers: { Authorization: `Bearer ${tocken}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const absencesData = (data.data || []).map((a: any) => {
+          // Backend returns studentId as a single string, convert to array
+          const studentId = a.studentId ? [a.studentId] : [];
+          return {
+            id: a.id,
+            studentId,
+            date: a.Date || a.date,
+            reason: a.cause || a.reason || '',
+            idMat: a.matieres || []
+          };
+        });
+        const sorted = absencesData.sort((a: Absence, b: Absence) => {
+          const dateA = a.date ? new Date(a.date).getTime() : 0;
+          const dateB = b.date ? new Date(b.date).getTime() : 0;
+          return dateB - dateA;
+        });
+        setAbsences(sorted);
+      }
+    } catch (err) {
+      setToast({ open: true, message: 'Erreur chargement absences', severity: 'error' });
+    }
+  };
 
   useEffect(() => {
-    if (tocken) {
-      GetAbcense();
-    }
+    if (tocken) fetchAbsences();
   }, [tocken]);
 
-  // GET all absences (backend returns populated idStud and matieres.idMat)
-  const GetAbcense = async () => {
-    try {
-      const getabcenses = await fetch("http://localhost:3000/Abcenses", {
-        headers: { Authorization: `Bearer ${tocken}` },
-      });
-      if (!getabcenses.ok) {
-        setToast({ open: true, message: "Fetch failed", severity: "error" });
-        return;
-      }
-      const response = await getabcenses.json();
-      setabcense(response.data || []);
-    } catch (err) {
-      console.error(err);
-      setToast({ open: true, message: "Server error", severity: "error" });
-    }
-  };
-
-  // Add absence — NOTE: we send idStud as array of IDs (strings)
-  const Addabcens = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    if (manystud.length === 0) {
-      setToast({ open: true, message: "Sélectionnez au moins un élève", severity: "warning" });
-      return;
-    }
-    const idStud = manystud; // already array of ids
-    const Date = date.current?.value;
-    const cause = caus.current?.value;
-
-    if (!Date) {
-      setToast({ open: true, message: "Choisissez une date", severity: "warning" });
+  // Sauvegarde
+  const handleSaveAbsence = async () => {
+    if (!date || (selectedStudents.length === 0 && !editingAbsence)) {
+      setToast({ open: true, message: 'Sélectionnez au moins un étudiant et une date', severity: 'error' });
       return;
     }
 
+    const formattedDate = new Date(date).toISOString().slice(0, 19) + 'Z';
+    const url = editingAbsence
+      ? `http://localhost:3000/Abcenses/${selectedAbsence?.id}`
+      : 'http://localhost:3000/Abcenses';
+
     try {
-      const Abcense = await fetch(`http://localhost:3000/Abcenses`, {
-        method: "POST",
+      const res = await fetch(url, {
+        method: editingAbsence ? 'PUT' : 'POST',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tocken}`,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${tocken}`
         },
-        // NOTE: we DO NOT send identifaite here (you said it's provided from context / backend)
-        body: JSON.stringify({ idStud, Date, cause, idMat }),
+        body: JSON.stringify({
+          identifaite: tocken,
+          idStud: editingAbsence ? selectedAbsence?.studentId : selectedStudents,
+          Date: formattedDate,
+          cause: reason,
+          idMat: []
+        })
       });
 
-      const response = await Abcense.json();
-
-      if (response.StatusCode !== 200) {
-        setToast({ open: true, message: "Échec lors de l'ajout de l'absence", severity: "error" });
-        return;
+      const data = await res.json();
+      if (res.ok) {
+        setToast({ open: true, message: data.message || 'Succès', severity: 'success' });
+        closeModal();
+        fetchAbsences();
+      } else {
+        throw new Error(data.message);
       }
-
-      // reset inputs
-      setmanystud([]);
-      date.current!.value = "";
-      caus.current!.value = "";
-      setmodules([]);
-      setShowModal(false);
-      await GetAbcense();
-
-      setToast({ open: true, message: "Absences ajoutées avec succès", severity: "success" });
-    } catch (error) {
-      console.error(error);
-      setToast({ open: true, message: "Erreur serveur ❌", severity: "error" });
+    } catch (err: any) {
+      setToast({ open: true, message: err.message || 'Erreur', severity: 'error' });
     }
   };
 
-  // Search (use query param 'search' to match backend)
-  const Searche = async (term: string) => {
+  const closeModal = () => {
+    setOpenModal(false);
+    setEditingAbsence(false);
+    setSelectedAbsence(null);
+    setSelectedStudents([]);
+    setDate('');
+    setReason('');
+  };
+
+  const openEditModal = (absence: Absence) => {
+    setSelectedAbsence(absence);
+    setEditingAbsence(true);
+    const dateValue = absence.date ? new Date(absence.date) : new Date();
+    setDate(dateValue.toISOString().split('T')[0]);
+    setReason(absence.reason || '');
+    setSelectedStudents(absence.studentId);
+    setOpenModal(true);
+  };
+
+  const handleDeleteAbsence = async (id: string) => {
+    if (!confirm('Supprimer cette absence ?')) return;
     try {
-      const getOne = await fetch(`http://localhost:3000/SearchAbc?search=${encodeURIComponent(term)}`, {
-        headers: { Authorization: `Bearer ${tocken}` },
+      await fetch(`http://localhost:3000/Abcenses/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${tocken}` }
       });
-      if (!getOne.ok) {
-        console.log("failed getone");
-        return;
-      }
-      const response = await getOne.json();
-      setabcense(response.data || []);
-    } catch (err) {
-      console.error(err);
+      setToast({ open: true, message: 'Supprimée', severity: 'success' });
+      fetchAbsences();
+      if (viewMode === 'details') setViewMode('list');
+    } catch {
+      setToast({ open: true, message: 'Erreur suppression', severity: 'error' });
     }
   };
 
-  const hadnlModules = (e: SelectChangeEvent<string[]>) => {
-    const { value } = e.target;
-    setmodules(typeof value === "string" ? value.split(",") : value);
-  };
+  // Vue liste
+  const renderListView = () => {
+    const groupAbsences = selectedGroup
+      ? absences.filter(a => a.studentId.some(id => students.some(s => s.id === id)))
+      : [];
 
-  const hadnlStudentes = (e: SelectChangeEvent<string[]>) => {
-    const { value } = e.target;
-    setmanystud(typeof value === "string" ? value.split(",") : value);
-  };
-  return (
-    <Box p={3} className={styles.page}>
-      <Snackbar
-        open={toast.open}
-        autoHideDuration={3000}
-        onClose={() => setToast({ ...toast, open: false })}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert onClose={() => setToast({ ...toast, open: false })} severity={toast.severity} sx={{ width: "100%" }}>
-          {toast.message}
-        </Alert>
-      </Snackbar>
+    // Group absences by student
+    const studentAbsencesMap = new Map<string, Absence[]>();
+    groupAbsences.forEach(absence => {
+      absence.studentId.forEach(sid => {
+        if (!studentAbsencesMap.has(sid)) {
+          studentAbsencesMap.set(sid, []);
+        }
+        studentAbsencesMap.get(sid)!.push(absence);
+      });
+    });
 
-      <Typography variant="h4" className={styles.title} gutterBottom>
-        Gestion des Absences
-      </Typography>
+    // Filter students by search term
+    const filteredStudentAbsences = Array.from(studentAbsencesMap.entries()).filter(([studentId]) => {
+      const student = stude.find(s => s.id === studentId);
+      return student?.Name.toLowerCase().includes(searchTerm.toLowerCase());
+    });
 
-      {/* Search + Ajouter */}
-      <Box className={styles.actions} mb={2} display="flex" gap={2}>
-        <TextField
-          onChange={(e) => Searche(e.target.value)}
-          label="🔍 Rechercher par nom"
-          variant="outlined"
-          size="small"
-          sx={{ width: 250, background: "#f9fafb", borderRadius: "10px" }}
-        />
-        <Button
-          startIcon={<AddIcon />}
-          variant="contained"
-          color="primary"
-          sx={{ borderRadius: "10px", textTransform: "none" }}
-          onClick={() => {
-            setShowModal(true);
-            setnamsstud([]); // reset students list until group chosen
-            setmanystud([]);
-          }}
-        >
-          Ajouter une absence
-        </Button>
-      </Box>
+    return (
+      <>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Typography variant="h4">Gestion des Absences</Typography>
+          <Box display="flex" gap={2}>
+            <Button
+              variant="outlined"
+              onClick={() => setOpenStudentListModal(true)}
+            >
+              Liste des élèves
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => {
+                if (!selectedGroup) {
+                  setToast({ open: true, message: 'Veuillez d\'abord sélectionner un groupe', severity: 'warning' });
+                } else if (selectedStudents.length === 0) {
+                  setToast({ open: true, message: 'Veuillez sélectionner au moins un élève', severity: 'warning' });
+                } else {
+                  setOpenModal(true);
+                }
+              }}
+            >
+              Ajouter une absence
+            </Button>
+          </Box>
+        </Box>
 
-      {/* Table */}
-      {abcense.length === 0 ? (
-        <Typography variant="body1" align="center" color="textSecondary" style={{ marginTop: "20px" }}>
-          Aucun résultat trouvé.
-        </Typography>
-      ) : (
-        <Paper>
-          <TableContainer>
-            <Table className={styles.table}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Nom (élèves)</TableCell>
-                  <TableCell>Nombre d&apos;absences</TableCell>
-                  <TableCell>Action</TableCell>
-                </TableRow>
-              </TableHead>
+        <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
+          <TextField
+            fullWidth
+            placeholder="Rechercher..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            InputProps={{ startAdornment: <InputAdornment position="start"><Search /></InputAdornment> }}
+          />
+          <FormControl fullWidth required>
+            <InputLabel>Sélectionner un groupe *</InputLabel>
+            <Select
+              value={selectedGroup}
+              label="Sélectionner un groupe *"
+              onChange={e => {
+                setSelectedGroup(e.target.value);
+                setSelectedStudents([]);
+              }}
+            >
+              {filteredGroups.map(g => (
+                <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
 
-              <TableBody>
-                {(abcense ?? []).map((item: any) => (
-                  <TableRow key={item._id}>
-                    <TableCell>
-                      {Array.isArray(item.idStud) && item.idStud.length > 0
-                        ? item.idStud.map((s: any) => s.Name).join(", ")
-                        : "Eleve supprimé"}
-                    </TableCell>
-
-                    <TableCell>{Array.isArray(item.Abcenses) ? item.Abcenses.length : 0}</TableCell>
-
-                    <TableCell>
-                      <Button
-                        startIcon={<VisibilityIcon />}
-                        variant="outlined"
-                        size="small"
-                        onClick={() => setSelectedStudent(item)}
-                      >
-                        Voir détails
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-      )}
-
-      {/* Modal détails */}
-      <Modal open={!!selectedStudent} onClose={() => setSelectedStudent(null)}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", p: 2 }}>
-          <Box sx={{ bgcolor: "white", borderRadius: "16px", boxShadow: 24, width: "100%", maxWidth: "900px", p: 4, maxHeight: "80vh", display: "flex", flexDirection: "column" }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold", color: "primary.main", mb: 2 }}>
-              📋 Détails des absences de{" "}
-              {Array.isArray(selectedStudent?.idStud) && selectedStudent.idStud.length > 0
-                ? selectedStudent.idStud.map((s: any) => s.Name).join(", ")
-                : "—"}
+        {/* Absences par élève */}
+        {selectedGroup && (
+          <Box mb={4}>
+            <Typography variant="h6" gutterBottom>
+              Absences - {groupe.find(g => g.id === selectedGroup)?.name}
             </Typography>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Élève</TableCell>
+                    <TableCell align="center">Nombre d'absences</TableCell>
+                    <TableCell align="center">Dernière absence</TableCell>
+                    <TableCell align="center">Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredStudentAbsences.length === 0 ? (
+                    <TableRow><TableCell colSpan={4} align="center">
+                      {searchTerm ? 'Aucun élève trouvé' : 'Aucune absence'}
+                    </TableCell></TableRow>
+                  ) : (
+                    filteredStudentAbsences.map(([studentId, studentAbsences]) => {
+                      const student = stude.find(s => s.id === studentId);
+                      const lastAbsence = studentAbsences.sort((a, b) => 
+                        new Date(b.date).getTime() - new Date(a.date).getTime()
+                      )[0];
+                      
+                      return (
+                        <TableRow key={studentId}>
+                          <TableCell>{student?.Name || 'Élève inconnu'}</TableCell>
+                          <TableCell align="center">
+                            <Chip label={studentAbsences.length} color="primary" size="small" />
+                          </TableCell>
+                          <TableCell align="center">
+                            {lastAbsence?.date ? new Date(lastAbsence.date).toLocaleDateString('fr-FR') : '-'}
+                          </TableCell>
+                          <TableCell align="center">
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              startIcon={<Visibility />}
+                              onClick={() => {
+                                // Show all absences for this student
+                                setSelectedAbsence(lastAbsence);
+                                setViewMode('details');
+                              }}
+                            >
+                              Voir détails ({studentAbsences.length})
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        )}
 
-            {selectedStudent && (
-              <TableContainer component={Paper} sx={{ borderRadius: "12px", boxShadow: "0px 2px 10px rgba(0,0,0,0.1)", flexGrow: 1, overflowY: "auto" }}>
-                <Table stickyHeader>
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: "primary.main" }}>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>Date</TableCell>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>Cause</TableCell>
-                      <TableCell sx={{ color: "white", fontWeight: "bold" }}>Matières</TableCell>
-                    </TableRow>
-                  </TableHead>
+        {/* Liste étudiants - Hidden, will use modal instead */}
+        <Box id="student-list-section" sx={{ display: 'none' }}>
+          <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    checked={selectedStudents.length === filteredStudents.length && filteredStudents.length > 0}
+                    indeterminate={selectedStudents.length > 0 && selectedStudents.length < filteredStudents.length}
+                    onChange={() => {
+                      if (selectedStudents.length === filteredStudents.length) {
+                        setSelectedStudents([]);
+                      } else {
+                        setSelectedStudents(filteredStudents.map(s => s.id));
+                      }
+                    }}
+                  />
+                </TableCell>
+                <TableCell>Nom</TableCell>
+                <TableCell>Dernière absence</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredStudents.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(s => {
+                const last = absences
+                  .filter(a => a.studentId.includes(s.id))
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+                return (
+                  <TableRow key={s.id}>
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={selectedStudents.includes(s.id)}
+                        onChange={() => {
+                          setSelectedStudents(prev =>
+                            prev.includes(s.id) ? prev.filter(id => id !== s.id) : [...prev, s.id]
+                          );
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>{s.Name}</TableCell>
+                    <TableCell>{last ? new Date(last.date).toLocaleDateString('fr-FR') : 'Aucune'}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredStudents.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={(_, p) => setPage(p)}
+            onRowsPerPageChange={e => {
+              setRowsPerPage(parseInt(e.target.value));
+              setPage(0);
+            }}
+            labelRowsPerPage="Lignes par page :"
+          />
+        </TableContainer>
+        </Box>
+      </>
+    );
+  };
 
-                  <TableBody>
-                    {selectedStudent.Abcenses.map((Abcens: any, idx: number) => (
-                      <TableRow key={idx} sx={{ "&:nth-of-type(odd)": { backgroundColor: "#f9fafb" }, "&:hover": { backgroundColor: "#e0f2fe" } }}>
-                        <TableCell>{new Date(Abcens.Date).toISOString().split("T")[0]}</TableCell>
-                        <TableCell sx={{ textTransform: "capitalize" }}>{Abcens.cause || "—"}</TableCell>
-                        <TableCell>{(Abcens.matieres || []).map((m: any) => m.idMat?.name ?? "—").join(", ")}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
+  // Vue détails
+  const renderDetailsView = () => {
+    if (!selectedAbsence) return null;
+    const studentsList = stude.filter(s => selectedAbsence.studentId.includes(s.id));
+    
+    // Get all absences for this student
+    const studentId = selectedAbsence.studentId[0];
+    const allStudentAbsences = absences.filter(a => a.studentId.includes(studentId));
 
-            <Box mt={2} display="flex" justifyContent="flex-end">
-              <Button variant="outlined" onClick={() => setSelectedStudent(null)} sx={{ borderRadius: "10px", textTransform: "none", px: 3 }}>
-                Fermer
-              </Button>
-            </Box>
+    return (
+      <Box>
+        <Button startIcon={<ArrowBack />} onClick={() => setViewMode('list')} sx={{ mb: 2 }}>
+          Retour à la liste
+        </Button>
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h5" gutterBottom>
+            Historique des absences - {studentsList[0]?.Name || 'Élève inconnu'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Total: {allStudentAbsences.length} absence(s)
+          </Typography>
+        </Paper>
+
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Date</TableCell>
+                <TableCell>Motif</TableCell>
+                <TableCell align="center">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {allStudentAbsences.map(absence => (
+                <TableRow key={absence.id}>
+                  <TableCell>
+                    {absence.date ? new Date(absence.date).toLocaleDateString('fr-FR') : 'Date inconnue'}
+                  </TableCell>
+                  <TableCell>{absence.reason || '-'}</TableCell>
+                  <TableCell align="center">
+                    <IconButton size="small" onClick={() => openEditModal(absence)} title="Modifier">
+                      <Edit />
+                    </IconButton>
+                    <IconButton size="small" color="error" onClick={() => handleDeleteAbsence(absence.id)} title="Supprimer">
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    );
+  };
+
+  return (
+    <Box p={3}>
+      {viewMode === 'list' ? renderListView() : renderDetailsView()}
+
+      {/* Modal */}
+      <Modal open={openModal} onClose={closeModal}>
+        <Box sx={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          width: 500, bgcolor: 'background.paper', boxShadow: 24, p: 4, borderRadius: 2
+        }}>
+          <Box display="flex" justifyContent="space-between" mb={3}>
+            <Typography variant="h6">{editingAbsence ? 'Modifier' : 'Nouvelle'} absence</Typography>
+            <IconButton onClick={closeModal}><CloseIcon /></IconButton>
+          </Box>
+
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel>Étudiants</InputLabel>
+            <Select
+              multiple
+              value={selectedStudents}
+              label="Étudiants"
+              onChange={e => setSelectedStudents(e.target.value as string[])}
+              renderValue={selected => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {selected.map(id => (
+                    <Chip key={id} label={stude.find(s => s.id === id)?.Name || id} />
+                  ))}
+                </Box>
+              )}
+            >
+              {students.map(s => (
+                <MenuItem key={s.id} value={s.id}>
+                  <Checkbox checked={selectedStudents.includes(s.id)} />
+                  {s.Name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <TextField
+            fullWidth label="Date" type="date" value={date} onChange={e => setDate(e.target.value)}
+            InputLabelProps={{ shrink: true }} sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth label="Motif (optionnel)" multiline rows={3} value={reason} onChange={e => setReason(e.target.value)}
+            sx={{ mb: 3 }}
+          />
+
+          <Box display="flex" justifyContent="flex-end" gap={2}>
+            <Button onClick={closeModal}>Annuler</Button>
+            <Button variant="contained" onClick={handleSaveAbsence}>Enregistrer</Button>
           </Box>
         </Box>
       </Modal>
 
-      {/* Modal ajout */}
-      <Modal open={showModal} onClose={() => setShowModal(false)}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", bgcolor: "rgba(0,0,0,0.4)", p: 2 }}>
-          <Box sx={{ bgcolor: "white", borderRadius: "16px", boxShadow: 24, width: "100%", maxWidth: 600, p: 4 }}>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold", color: "primary.main", mb: 3 }}>
-              ➕ Ajouter une absence
-            </Typography>
+      <Snackbar open={toast.open} autoHideDuration={6000} onClose={() => setToast({ ...toast, open: false })}>
+        <Alert onClose={() => setToast({ ...toast, open: false })} severity={toast.severity}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
 
-            <form onSubmit={Addabcens} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <Typography>Groupe</Typography>
-              <Select
-                displayEmpty
-                fullWidth
-                sx={{ borderRadius: "10px" }}
-                input={<OutlinedInput />}
-              >
-                <MenuItem disabled value="">
-                  <em>Sélectionner un Groupe</em>
-                </MenuItem>
-                {groupe.map((grp: any) => (
-                  // when selecting group, set namsstud to the populated student objects (grp.Studentid or grp.idStud depending on your group response)
-                  <MenuItem
-                    onClick={() => {
-                      // if your groupe object uses Studentid populated:
-                      if (grp.Studentid && Array.isArray(grp.Studentid)) {
-                        setnamsstud(grp.Studentid);
-                      } else if (grp.idStud && Array.isArray(grp.idStud)) {
-                        setnamsstud(grp.idStud);
-                      } else {
-                        setnamsstud([]);
-                      }
-                      setmanystud([]); // reset selection
-                    }}
-                    key={grp._id}
-                    value={grp._id}
-                  >
-                    {grp.name}
-                  </MenuItem>
-                ))}
-              </Select>
+      {/* Modal Liste des élèves */}
+      <Modal open={openStudentListModal} onClose={() => setOpenStudentListModal(false)}>
+        <Box sx={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          width: 700, bgcolor: 'background.paper', boxShadow: 24, p: 4, borderRadius: 2, maxHeight: '90vh', overflow: 'auto'
+        }}>
+          <Box display="flex" justifyContent="space-between" mb={3}>
+            <Typography variant="h6">Liste des élèves par groupe</Typography>
+            <IconButton onClick={() => setOpenStudentListModal(false)}><CloseIcon /></IconButton>
+          </Box>
 
-              <Typography>Eleves</Typography>
-              <Select
-                multiple
-                onChange={hadnlStudentes}
-                value={manystud}
-                fullWidth
-                sx={{ borderRadius: "10px" }}
-                input={<OutlinedInput />}
-                MenuProps={MenuProps}
-              >
-                <MenuItem disabled value="">
-                  <em>Sélectionner des élèves</em>
-                </MenuItem>
+          <FormControl fullWidth sx={{ mb: 3 }}>
+            <InputLabel>Sélectionner un groupe</InputLabel>
+            <Select
+              value={tempSelectedGroup}
+              label="Sélectionner un groupe"
+              onChange={e => setTempSelectedGroup(e.target.value)}
+            >
+              {groupe.map(g => (
+                <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-                {namsstud.map((eleve: any) => (
-                  // each eleve is an object (populated): use _id as value, show Name
-                  <MenuItem key={eleve._id} value={eleve._id}>
-                    {eleve.Name}
-                  </MenuItem>
-                ))}
-              </Select>
+          {tempSelectedGroup && (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={
+                          selectedStudents.length === 
+                          stude.filter(s => groupe.find(g => g.id === tempSelectedGroup)?.Studentid.includes(s.id)).length &&
+                          stude.filter(s => groupe.find(g => g.id === tempSelectedGroup)?.Studentid.includes(s.id)).length > 0
+                        }
+                        onChange={() => {
+                          const groupStudents = stude.filter(s => 
+                            groupe.find(g => g.id === tempSelectedGroup)?.Studentid.includes(s.id)
+                          );
+                          if (selectedStudents.length === groupStudents.length) {
+                            setSelectedStudents([]);
+                          } else {
+                            setSelectedStudents(groupStudents.map(s => s.id));
+                          }
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell>Nom</TableCell>
+                    <TableCell>Dernière absence</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {stude
+                    .filter(s => groupe.find(g => g.id === tempSelectedGroup)?.Studentid.includes(s.id))
+                    .map(s => {
+                      const last = absences
+                        .filter(a => a.studentId.includes(s.id))
+                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+                      return (
+                        <TableRow key={s.id}>
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              checked={selectedStudents.includes(s.id)}
+                              onChange={() => {
+                                setSelectedStudents(prev =>
+                                  prev.includes(s.id) ? prev.filter(id => id !== s.id) : [...prev, s.id]
+                                );
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>{s.Name}</TableCell>
+                          <TableCell>{last ? new Date(last.date).toLocaleDateString('fr-FR') : 'Aucune'}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
 
-              <TextField
-                inputRef={date}
-                label="Date d'absence"
-                type="date"
-                required
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-                sx={{ borderRadius: "10px" }}
-              />
-
-              <TextField inputRef={caus} label="Cause" fullWidth sx={{ borderRadius: "10px" }} />
-
-              <Typography>Modules</Typography>
-              <Select multiple value={idMat} onChange={hadnlModules} fullWidth input={<OutlinedInput />} MenuProps={MenuProps} sx={{ borderRadius: "10px" }}>
-                {uniqueMats.map((name: any) => (
-                  <MenuItem value={name._id} key={name._id}>
-                    {name.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              {/* Actions */}
-              <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
-                <Button variant="outlined" onClick={() => setShowModal(false)} sx={{ borderRadius: "10px" }}>
-                  Annuler
-                </Button>
-                <Button type="submit" variant="contained" sx={{ borderRadius: "10px", bgcolor: "primary.main", "&:hover": { bgcolor: "primary.dark" } }}>
-                  Enregistrer
-                </Button>
-              </Box>
-            </form>
+          <Box display="flex" justifyContent="flex-end" gap={2} mt={3}>
+            <Button onClick={() => setOpenStudentListModal(false)}>Fermer</Button>
+            <Button 
+              variant="contained" 
+              onClick={() => {
+                if (tempSelectedGroup) {
+                  setSelectedGroup(tempSelectedGroup);
+                }
+                setOpenStudentListModal(false);
+              }}
+              disabled={!tempSelectedGroup}
+            >
+              Confirmer ({selectedStudents.length} sélectionné(s))
+            </Button>
           </Box>
         </Box>
       </Modal>

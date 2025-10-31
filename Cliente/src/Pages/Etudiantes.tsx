@@ -44,8 +44,8 @@ export function Etudiantes() {
   const [modules, setModules] = useState<string[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
   const [showModal, setShowModal] = useState(false);
-  const [showModalup, setShowModalup] = useState<number | null>(null);
-  const [idASupprimer, setIdsupprimer] = useState<number | null>(null);
+  const [showModalup, setShowModalup] = useState<string | null>(null);
+  const [idASupprimer, setIdsupprimer] = useState<string | null>(null);
   const [toast, setToast] = useState<{ open: boolean, msg: string, type: 'success' | 'error' }>({ open: false, msg: "", type: "success" })
   const [Nivuea, setniveau] = useState<any>("")
   const [Spécialité, setspecialite] = useState<any>("")
@@ -122,11 +122,12 @@ export function Etudiantes() {
     age.current!.value = response.data.Age
     phone.current!.value = response.data.Telephone
     date.current!.value = new Date(response.data.Date).toISOString().split('T')[0]
-    setModules(response.data.modules.map((nam: any) => nam.matid._id))
+    // in sqlite, modules and Groupe are arrays of ids
+    setModules(response.data.modules || [])
     setgenre(response.data.Genre)
     setniveau(response.data.Nivuea)
     setspecialite(response.data.Spécialité)
-    setGroupe(response.data.Groupe.map((name: any) => name._id))
+    setGroupe(response.data.Groupe || [])
   }
   const DeleteStud = async () => {
     const remove = await fetch(`http://localhost:3000/Student/${idASupprimer}`, {
@@ -271,20 +272,20 @@ export function Etudiantes() {
             </TableHead>
             <TableBody >
               {(stude ?? []).map((item: any) => (
-                <TableRow key={item._id} hover>
+                <TableRow key={(item as any).id} hover>
                   <TableCell sx={{ textAlign: 'center' }}>{item.Name}</TableCell>
                   <TableCell >{item.Age}</TableCell>
                   <TableCell >{item.Nivuea}</TableCell>
                   <TableCell>{item.Spécialité ?? "rien"}</TableCell>
                   <TableCell>{item.Telephone}</TableCell>
-                  <TableCell>{item.modules.map((m: any) => m.matid.name).join(",")}</TableCell>
-                  <TableCell >{item.Date.split("T")[0]}</TableCell>
+                  <TableCell>{(item.modules || []).map((mid: string) => (mat.find((mm:any)=> mm.id === mid)?.name) || "").filter(Boolean).join(",")}</TableCell>
+                  <TableCell >{(item.Date || "").split("T")[0]}</TableCell>
                   <TableCell>{item.Genre}</TableCell>
                   <TableCell>
                     <Box display="flex" gap={1}>
-                      <Button onClick={() => { setShowModalup(item._id); getOneStud(item._id) }} startIcon={<Update />} size="small" variant="outlined">Modifier</Button>
-                      <Button onClick={() => setIdsupprimer(item._id)} startIcon={<DeleteIcon />} size="small" variant="outlined" color="error">Supprimer</Button>
-                      <Button onClick={() => setSelectedStudent(item)} startIcon={<VisibilityIcon />} size="small" variant="outlined">Voir</Button>
+                      <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowModalup((item as any).id); getOneStud((item as any).id) }} startIcon={<Update />} size="small" variant="outlined">Modifier</Button>
+                      <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIdsupprimer((item as any).id) }} startIcon={<DeleteIcon />} size="small" variant="outlined" color="error">Supprimer</Button>
+                      <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedStudent(item) }} startIcon={<VisibilityIcon />} size="small" variant="outlined">Voir</Button>
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -378,7 +379,10 @@ export function Etudiantes() {
                           Groups
                         </Typography>
                         <Typography variant="body1" fontWeight="600" color="#111827">
-                          {selectedStudent.Groupe.map((Grp: any) => Grp.name).join(",")}
+                          {(selectedStudent.Groupe || [])
+                            .map((gid: string) => (groupe.find((gg:any)=> gg.id === gid)?.name) || "")
+                            .filter(Boolean)
+                            .join(", ")}
                         </Typography>
                       </Box>
                     </Box>
@@ -411,7 +415,7 @@ export function Etudiantes() {
                           Date
                         </Typography>
                         <Typography variant="body1" fontWeight="600" color="#111827">
-                          {selectedStudent.Date.split("T")[0]}
+                          {(selectedStudent.Date || "").split("T")[0]}
                         </Typography>
                       </Box>
                     </Box>
@@ -422,7 +426,10 @@ export function Etudiantes() {
                           Modules
                         </Typography>
                         <Typography variant="body1" fontWeight="600" color="#111827">
-                          {selectedStudent.modules.map((n: any) => n.matid.name).join(", ")}
+                          {(selectedStudent.modules || [])
+                            .map((mid: string) => (mat.find((m:any)=> m.id === mid)?.name) || "")
+                            .filter(Boolean)
+                            .join(", ")}
                         </Typography>
                       </Box>
                     </Box>
@@ -476,7 +483,7 @@ export function Etudiantes() {
               <Typography >Groupe</Typography>
               <Select multiple value={Groupe} onChange={hadnlGroups} input={<OutlinedInput />} MenuProps={MenuProps} fullWidth>
                 {groupe.map((item) => (
-                  <MenuItem key={item._id} value={item._id}>{item.name}</MenuItem>
+                  <MenuItem key={(item as any).id} value={(item as any).id}>{item.name}</MenuItem>
                 ))}
               </Select>
               <Typography>Niveau</Typography>
@@ -492,8 +499,8 @@ export function Etudiantes() {
               <TextField inputRef={phone} label="Téléphone" required fullWidth margin="normal" />
               <Typography variant="subtitle1">Modules :</Typography>
               <Select multiple value={modules} onChange={handleChangeModules} input={<OutlinedInput />} MenuProps={MenuProps} fullWidth>
-                {(mat ?? []).map((item) => (
-                  <MenuItem key={item._id} value={item._id} >{item.name} de {item.Niveau}</MenuItem>
+                {(mat ?? []).map((item:any) => (
+                  <MenuItem key={item.id} value={item.id} >{item.name} de {item.Niveau}</MenuItem>
                 ))}
               </Select>
               <FormLabel id="demo-controlled-radio-buttons-group">Gender</FormLabel>
@@ -545,14 +552,14 @@ export function Etudiantes() {
               <Typography >Groupe</Typography>
               <Select multiple onChange={hadnlGroups} value={Groupe} input={<OutlinedInput />} MenuProps={MenuProps} fullWidth>
                 {groupe.map((item) => (
-                  <MenuItem key={item._id} value={item._id}>{item.name}</MenuItem>
+                  <MenuItem key={(item as any).id} value={(item as any).id}>{item.name}</MenuItem>
                 ))}
               </Select>
               <TextField inputRef={phone} required fullWidth margin="normal" />
               <Typography variant="subtitle1">Modules :</Typography>
               <Select multiple value={modules} onChange={handleChangeModules} input={<OutlinedInput />} MenuProps={MenuProps} fullWidth>
-                {(mat ?? []).map((item) => (
-                  <MenuItem key={item._id} value={item._id}>{item.name} de {item.Niveau}</MenuItem>
+                {(mat ?? []).map((item:any) => (
+                  <MenuItem key={item.id} value={item.id}>{item.name} de {item.Niveau}</MenuItem>
                 ))}
               </Select>
               <RadioGroup

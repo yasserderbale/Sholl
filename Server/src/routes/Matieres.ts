@@ -1,12 +1,12 @@
 import express, { response } from "express";
 import { validatejwt } from "../medallware/ValidateJWT";
-import { Newmatire, Searchonmat } from "../services/Matieres";
+import { Newmatire, Searchonmat } from "../services/MatieresSqlite";
 import {
   Deletmatiere,
   Getmatieres,
   Getonemat,
   updatematiere,
-} from "../services/Matieres";
+} from "../services/MatieresSqlite";
 const route = express.Router();
 route.get("/Matieres", validatejwt, async (req, res) => {
   const identifiante = (req as any).payload;

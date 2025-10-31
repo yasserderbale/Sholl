@@ -137,7 +137,7 @@ const Classes: React.FC = () => {
     const isDuplicate = classes.some(
       (c) =>
         c.name.toLowerCase() === newClassName.trim().toLowerCase() &&
-        c._id !== editClassId
+        (c as any).id !== editClassId
     );
     if (isDuplicate) {
       setSnackbar({
@@ -166,7 +166,7 @@ const Classes: React.FC = () => {
       if (data.StatusCode === 200) {
         if (isEditingClass) {
           setClasses((prev) =>
-            prev.map((c) => (c._id === editClassId ? data.data : c))
+            prev.map((c: any) => ((c as any).id === editClassId ? data.data : c))
           );
         } else {
           setClasses((prev) => [...prev, data.data]);
@@ -203,7 +203,7 @@ const Classes: React.FC = () => {
       });
       const data = await res.json();
       if (data.StatusCode === 200) {
-        setClasses((prev) => prev.filter((c) => c._id !== id));
+        setClasses((prev) => prev.filter((c: any) => (c as any).id !== id));
         setSnackbar({
           open: true,
           message: "Classe supprimée ✅",
@@ -223,7 +223,7 @@ const Classes: React.FC = () => {
   const handleEditClass = (classe: Classe) => {
     setNewClassName(classe.name);
     setNewClassNotes(classe.notes || "");
-    setEditClassId(classe._id);
+    setEditClassId((classe as any).id);
     setIsEditingClass(true);
     setShowAddClassModal(true);
   };
@@ -232,7 +232,7 @@ const Classes: React.FC = () => {
   const handleOpenGroupsModal = async (classData: Classe) => {
     setSelectedClass(classData);
     setShowGroupsModal(true);
-    await fetchGroupesByClasse(classData._id);
+    await fetchGroupesByClasse((classData as any).id);
   };
 
   const handleSubmitGroup = async (e: React.FormEvent) => {
@@ -260,8 +260,8 @@ const Classes: React.FC = () => {
           Authorization: `Bearer ${tocken}`,
         },
         body: JSON.stringify({
-          groupeId: selectedG._id,
-          classeId: selectedClass._id,
+          groupeId: (selectedG as any).id,
+          classeId: (selectedClass as any).id,
           heureDebut: heureDebut.format("HH:mm"),
           heureFin: heureFin.format("HH:mm"),
           jours: selectedDays,
@@ -269,7 +269,7 @@ const Classes: React.FC = () => {
       });
       const data = await res.json();
       if (data.StatusCode === 200) {
-        await fetchGroupesByClasse(selectedClass._id);
+        await fetchGroupesByClasse((selectedClass as any).id);
         setShowAddGroupModal(false);
         setIsEditingGroup(false);
         setSnackbar({
@@ -298,7 +298,7 @@ const Classes: React.FC = () => {
       });
       const data = await res.json();
       if (data.StatusCode === 200 && selectedClass) {
-        await fetchGroupesByClasse(selectedClass._id);
+        await fetchGroupesByClasse((selectedClass as any).id);
         setSnackbar({
           open: true,
           message: "Groupe supprimé ✅",
@@ -319,7 +319,7 @@ const Classes: React.FC = () => {
     setHeureDebut(dayjs(grp.heureDebut, "HH:mm"));
     setHeureFin(dayjs(grp.heureFin, "HH:mm"));
     setSelectedDays(grp.jours);
-    setEditGroupId(grp._id);
+    setEditGroupId((grp as any).id);
     setIsEditingGroup(true);
     setShowAddGroupModal(true);
   };
@@ -358,8 +358,8 @@ const Classes: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {classes.map((c, i) => (
-                <TableRow key={c._id}>
+              {classes.map((c: any, i) => (
+                <TableRow key={(c as any).id}>
                   <TableCell>{i + 1}</TableCell>
                   <TableCell>{c.name}</TableCell>
                   <TableCell>{c.notes}</TableCell>
@@ -370,7 +370,7 @@ const Classes: React.FC = () => {
                     <IconButton color="secondary" onClick={() => handleEditClass(c)}>
                       <Update />
                     </IconButton>
-                    <IconButton color="error" onClick={() => handleDeleteClass(c._id)}>
+                    <IconButton color="error" onClick={() => handleDeleteClass((c as any).id)}>
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
@@ -451,8 +451,8 @@ const Classes: React.FC = () => {
                 </TableHead>
                 <TableBody>
                   {selectedClass &&
-                    classGroups[selectedClass._id]?.map((g) => (
-                      <TableRow key={g._id}>
+                    classGroups[(selectedClass as any).id]?.map((g: any) => (
+                      <TableRow key={(g as any).id}>
                         <TableCell>{g.groupeId.name}</TableCell>
                         <TableCell>{g.heureDebut}</TableCell>
                         <TableCell>{g.heureFin}</TableCell>
@@ -461,7 +461,7 @@ const Classes: React.FC = () => {
                           <IconButton color="secondary" onClick={() => handleEditGroup(g)}>
                             <Update />
                           </IconButton>
-                          <IconButton color="error" onClick={() => handleDeleteGroup(g._id)}>
+                          <IconButton color="error" onClick={() => handleDeleteGroup((g as any).id)}>
                             <DeleteIcon />
                           </IconButton>
                         </TableCell>
@@ -499,7 +499,7 @@ const Classes: React.FC = () => {
                       onChange={(e) => setGroupName(e.target.value)}
                     >
                       {groupe?.map((g: any) => (
-                        <MenuItem key={g._id} value={g.name}>
+                        <MenuItem key={(g as any).id} value={g.name}>
                           {g.name} — ({g.Nbrmax} élèves)
                         </MenuItem>
                       ))}

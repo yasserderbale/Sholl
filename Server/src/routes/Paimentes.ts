@@ -6,7 +6,7 @@ import {
   getPaimentes,
   RegistnewPaimente,
   SearchePaiementStud,
-} from "../services/Paimentes";
+} from "../services/PaimentesSqlite";
 const route = express.Router();
 route.post("/Paimentes", validatejwt, async (req, res) => {
   const identifiante = (req as any).payload;

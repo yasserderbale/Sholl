@@ -115,7 +115,7 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     const response = await Delete.json()
 
     console.log(response.data)
-    setmat((previesmat) => previesmat.filter((item) => item._id !== response.data._id))
+    setmat((previesmat) => previesmat.filter((item:any) => item.id !== idMat))
   }
 
   const getOneMat = async (idMat: any): Promise<Matiere> => {
@@ -145,7 +145,7 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     if (!updateOne.ok) alert(response.data)
 
     console.log(response.data)
-    setmat((prev) => prev.map(m => m._id === idMat ? { ...m, Niveau, prix } : m))
+    setmat((prev:any[]) => prev.map((m:any) => m.id === idMat ? { ...m, Niveau, prix } : m))
   }
   const Searchonmat = async (quiry: any) => {
     const getonemat = await fetch(`http://localhost:3000/searchOne?name=${quiry}`, {

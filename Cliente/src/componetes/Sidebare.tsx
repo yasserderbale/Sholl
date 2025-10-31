@@ -47,18 +47,7 @@ export const Sidebar: React.FC = () => {
           <ListItemText primary="Gestion des élèves" />
         </ListItem>
 
-        <ListItem
-          component={Link}
-          to="/Profes"
-          className={Styles.link}
-
-        >
-          <ListItemIcon>
-            <PeopleIcon />
-          </ListItemIcon>
-          <ListItemText primary="Gestion des Profs" />
-        </ListItem>
-
+      
         <ListItem component={Link} to="/Matires" className={Styles.link} >
           <ListItemIcon>
             <SchoolIcon />
@@ -110,17 +99,7 @@ export const Sidebar: React.FC = () => {
         </ListItem>
 
 
-        <ListItem
-          component={Link}
-          to="/parametres"
-          className={Styles.link}
-
-        >
-          <ListItemIcon>
-            <SettingsIcon />
-          </ListItemIcon>
-          <ListItemText primary="Paramètres" />
-        </ListItem>
+     
       </List>
 
       <button onClick={logoute} className={Styles.logout}>

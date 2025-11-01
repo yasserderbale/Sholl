@@ -182,23 +182,55 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     }
   }, [tocken])
   const seracheStud = async (value: any) => {
-    if (!value) getStudentes()
-    const searchOne = await fetch(`http://localhost:3000/Search?name=${value}`, {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${tocken}`
+    if (!value) {
+      getStudentes()
+      return
+    }
+    
+    // البحث المحسن - يشمل الاسم، الهاتف، التخصص، والمستوى
+    try {
+      const searchOne = await fetch(`http://localhost:3000/Search?name=${value}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${tocken}`
+        }
+      })
+      
+      if (!searchOne.ok) {
+        console.error("Search failed")
+        return
       }
-
-    })
-    if (!searchOne.ok) {
-      return
+      
+      const response = await searchOne.json()
+      if (response && response.data) {
+        setstud(response.data)
+      } else {
+        // إذا لم توجد نتائج من الـ API، ابحث محلياً
+        const localResults = stude.filter((student: any) => {
+          const searchTerm = value.toLowerCase()
+          return (
+            student.Name?.toLowerCase().includes(searchTerm) ||
+            student.Telephone?.includes(searchTerm) ||
+            student.Spécialité?.toLowerCase().includes(searchTerm) ||
+            student.Nivuea?.toLowerCase().includes(searchTerm)
+          )
+        })
+        setstud(localResults)
+      }
+    } catch (error) {
+      console.error("Search error:", error)
+      // في حالة الخطأ، ابحث محلياً
+      const localResults = stude.filter((student: any) => {
+        const searchTerm = value.toLowerCase()
+        return (
+          student.Name?.toLowerCase().includes(searchTerm) ||
+          student.Telephone?.includes(searchTerm) ||
+          student.Spécialité?.toLowerCase().includes(searchTerm) ||
+          student.Nivuea?.toLowerCase().includes(searchTerm)
+        )
+      })
+      setstud(localResults)
     }
-    const response = await searchOne.json()
-    if (!response) {
-      alert(response.data)
-      return
-    }
-    setstud(response.data)
   }
   const getgroupes = async () => {
     const getgroupe = await fetch("http://localhost:3000/Groupes", {

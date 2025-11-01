@@ -13,42 +13,42 @@ import {
   Modal,
   Snackbar,
   Alert,
-  TableContainer
+  TableContainer,
+  InputAdornment
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Add as AddIcon, Search } from '@mui/icons-material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Update } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { usAuth } from '../Context/AuthContext';
+import { useLanguage } from '../Context/LanguageContext';
+import { useSchool } from "../Context/SchoolContext";
 import { Button, Stack } from "@mui/material";
 import { FileDownload } from "@mui/icons-material";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 export function Groupe() {
   const [idgroupe, setidgroupe] = useState<any>(null)
   const [idliste, setidlist] = useState<any>(null)
+  const { t, language } = useLanguage();
+  const { settings } = useSchool();
   const { groupe, tocken, setgroupe, stude } = usAuth()
   const [idASupprimer, setIdsupprimer] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [liste, setliste] = useState<String[] | null>(null)
+  const [liste, setliste] = useState<string[] | null>(null)
   const [namgroupe, setnamegroupe] = useState("")
   const [toast, setToast] = useState<{ open: boolean, msg: string, type: 'success' | 'error' }>({ open: false, msg: "", type: "success" })
   useEffect(() => {
     setgroupe(groupe)
   }, [groupe])
   const Name = useRef<HTMLInputElement>(null)
-  const nbr = useRef<HTMLInputElement>(null)
-  const Friase = useRef<HTMLInputElement>(null)
   const addnewGroupe = async (event: React.FormEvent) => {
     event.preventDefault()
     const name = Name.current?.value
-    const nbrmax = nbr.current?.value
-    const fraise = Friase.current?.value
-    if (!name || !nbrmax || !fraise) {
-      setToast({ open: true, msg: "saisr tous informations", type: "error" })
-
+    if (!name) {
+      setToast({ open: true, msg: "Veuillez saisir le nom du groupe", type: "error" })
       return
     }
     const newGroupe = await fetch("http://localhost:3000/Groupes", {
@@ -57,7 +57,7 @@ export function Groupe() {
         "Authorization": `Bearer ${tocken}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ name, nbrmax, fraise }),
+      body: JSON.stringify({ name }),
     })
     const response = await newGroupe.json()
     if (response.StatusCode != 200) {
@@ -67,10 +67,8 @@ export function Groupe() {
     }
     setgroupe((prev) => [...prev, response.data])
     Name.current!.value = ""
-    nbr.current!.value = ""
-    Friase.current!.value = ""
     setShowModal(false)
-    setToast({ open: true, msg: "new Groupe succed", type: "success" })
+    setToast({ open: true, msg: "Groupe ajouté avec succès", type: "success" })
 
   }
   const getOnegroupe = async (ID: any) => {
@@ -86,8 +84,6 @@ export function Groupe() {
     }
     setnamegroupe(response.data.name)
     if (Name.current) Name.current.value = response.data.name
-    if (nbr.current) nbr.current.value = response.data.Nbrmax
-    if (Friase.current) Friase.current.value = response.data.fraisscolaire
     // Studentid is array of student IDs in SQLite; map to names from context 'stude'
     setliste(
       (response.data.Studentid || [])
@@ -100,15 +96,13 @@ export function Groupe() {
   const updateOne = async (event: React.FormEvent) => {
     event.preventDefault()
     const name = Name.current!.value
-    const Nbrmax = nbr.current!.value
-    const fraisscolaire = Friase.current!.value
     const update = await fetch(`http://localhost:3000/Groupes/${idgroupe}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${tocken}`
       },
-      body: JSON.stringify({ name, Nbrmax, fraisscolaire })
+      body: JSON.stringify({ name })
     })
     const reponse = await update.json()
     if (reponse.StatusCode !== 200) {
@@ -118,7 +112,7 @@ export function Groupe() {
     }
     setgroupe((prev) => prev.map((item) => item.id == idgroupe ? reponse.data : item))
     setidgroupe(null)
-    setToast({ open: true, msg: "updating succed", type: "success" })
+    setToast({ open: true, msg: "Groupe modifié avec succès", type: "success" })
   }
   const Deleteongroupe = async () => {
     const Delete = await fetch(`http://localhost:3000/Groupes/${idASupprimer}`, {
@@ -135,7 +129,7 @@ export function Groupe() {
     }
     setgroupe((preve) => preve.filter((item) => item.id !== idASupprimer))
     setIdsupprimer(null)
-    setToast({ open: true, msg: "delete succed", type: "success" })
+    setToast({ open: true, msg: "Groupe supprimé avec succès", type: "success" })
   }
   const Searchgroupe = async (Text: string) => {
     const searchone = await fetch(`http://localhost:3000/SeatcheGroupe?name=${Text}`, {
@@ -150,6 +144,11 @@ export function Groupe() {
   }
 
   const handleExportExcel = () => {
+    if (!liste || liste.length === 0) {
+      setToast({ open: true, msg: "لا توجد بيانات للتصدير", type: "error" });
+      return;
+    }
+    
     const worksheet = XLSX.utils.json_to_sheet(liste.map((student, i) => ({
       "#": i + 1,
       "Nom": student
@@ -162,19 +161,99 @@ export function Groupe() {
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, `Liste_Etudiants_${namgroupe}.xlsx`);
   };
-  const handleExportPDF = () => {
-    const doc = new jsPDF();
 
-    doc.setFontSize(14);
-    doc.text(`Liste des Étudiants ${namgroupe}`, 14, 15);
-    const tableData = liste.map((student, i) => [i + 1, student]);
-    autoTable(doc, {
-      head: [["#", "Nom de l'étudiant"]],
-      body: tableData,
-      startY: 25,
-    });
+  const handleExportPDF = async () => {
+    if (!liste || liste.length === 0) {
+      setToast({ open: true, msg: "لا توجد بيانات للتصدير", type: "error" });
+      return;
+    }
 
-    doc.save(`Liste_Etudiants_${namgroupe}.pdf`);
+    try {
+      // استخدام html2canvas لتحويل الجدول إلى صورة للحفاظ على النص العربي
+      const { default: html2canvas } = await import('html2canvas');
+      const { jsPDF } = await import('jspdf');
+      
+      // إنشاء جدول HTML مؤقت للتصدير
+      const tempDiv = document.createElement('div');
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      tempDiv.style.top = '0';
+      tempDiv.style.background = 'white';
+      tempDiv.style.padding = '40px';
+      tempDiv.style.fontFamily = 'Arial, sans-serif';
+      tempDiv.style.direction = 'rtl';
+      tempDiv.style.width = '1000px'; // عرض ثابت كبير
+      tempDiv.style.minHeight = '800px'; // ارتفاع أدنى
+      
+      tempDiv.innerHTML = `
+        <div style="text-align: center; margin-bottom: 30px; padding: 20px;">
+          <h1 style="color: #1976d2; margin: 0; font-size: 28px; font-weight: bold;">${language === 'ar' ? settings.schoolNameAr : settings.schoolNameFr}</h1>
+          <h2 style="color: #666; margin: 10px 0; font-size: 20px;">${language === 'ar' ? 'للتعليم المتميز والتربية الحديثة' : 'For Excellence in Education and Modern Training'}</h2>
+          <h3 style="color: #333; margin: 15px 0; font-size: 18px; border-bottom: 2px solid #1976d2; padding-bottom: 10px;">قائمة طلاب مجموعة: ${namgroupe}</h3>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; margin: 30px 0; font-size: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <thead>
+            <tr style="background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%); color: white;">
+              <th style="border: 2px solid #1565c0; padding: 20px; text-align: center; font-size: 18px; font-weight: bold; width: 15%;">الرقم</th>
+              <th style="border: 2px solid #1565c0; padding: 20px; text-align: center; font-size: 18px; font-weight: bold; width: 85%;">اسم الطالب</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${liste.map((student, i) => `
+              <tr style="background-color: ${i % 2 === 0 ? '#f8f9fa' : 'white'}; transition: background-color 0.3s;">
+                <td style="border: 1px solid #dee2e6; padding: 15px; text-align: center; font-size: 16px; font-weight: bold; color: #1976d2;">${i + 1}</td>
+                <td style="border: 1px solid #dee2e6; padding: 15px; text-align: right; font-size: 16px; color: #333;">${student}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #1976d2;">
+          <p style="margin: 5px 0; font-size: 16px; color: #333; font-weight: bold;">📊 عدد الطلاب: ${liste.length}</p>
+          <p style="margin: 5px 0; font-size: 16px; color: #333; font-weight: bold;">📅 تاريخ الإنشاء: ${new Date().toLocaleDateString('ar-DZ')}</p>
+        </div>
+      `;
+      
+      document.body.appendChild(tempDiv);
+      
+      // تحويل إلى صورة
+      const canvas = await html2canvas(tempDiv, {
+        scale: 3, // جودة أعلى
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        width: 1200, // عرض أكبر
+        height: tempDiv.scrollHeight + 60
+      });
+      
+      // إزالة العنصر المؤقت
+      document.body.removeChild(tempDiv);
+      
+      // إنشاء PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      // حساب الأبعاد لتملأ الصفحة
+      const imgWidth = pageWidth - 20; // هوامش 10mm من كل جهة
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // توسيط الصورة
+      const x = (pageWidth - imgWidth) / 2;
+      const y = 10;
+      
+      const imgData = canvas.toDataURL('image/png');
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+      
+      // حفظ الملف
+      const fileName = `قائمة_طلاب_${namgroupe}_${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(fileName);
+      
+      setToast({ open: true, msg: "تم تصدير PDF بنجاح مع دعم العربية", type: "success" });
+      
+    } catch (error) {
+      console.error('خطأ في تصدير PDF:', error);
+      setToast({ open: true, msg: "حدث خطأ في التصدير", type: "error" });
+    }
   };
   return (
     <Box className={Styles.page} p={3}>
@@ -182,12 +261,19 @@ export function Groupe() {
         <Alert severity={toast.type}>{toast.msg}</Alert>
       </Snackbar>
       <Typography variant="h4" className={Styles.title} gutterBottom>
-        Gestion des groupe
+        {t('groupManagement')}
       </Typography>
       <Box mb={2} display="flex" gap={2}>
         <TextField
           onChange={(e) => Searchgroupe(e.target.value)}
-          label="🔍 Rechercher par nom"
+          label={`${t('search')}`}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search sx={{ color: 'action.active' }} />
+              </InputAdornment>
+            ),
+          }}
           variant="outlined"
           size="small"
           sx={{
@@ -203,7 +289,7 @@ export function Groupe() {
           sx={{ borderRadius: "10px", textTransform: "none" }}
           onClick={() => setShowModal(true)}
         >
-          Ajouter un groupe
+          {t('addGroup')}
         </Button>
       </Box>
       {
@@ -211,33 +297,31 @@ export function Groupe() {
           <Typography variant="body1"
             align="center"
             color="textSecondary"
-            style={{ marginTop: "29px" }}>Aucune donnée</Typography>
+            style={{ marginTop: "29px" }}>{t('noData')}</Typography>
           :
           <Paper sx={{ borderRadius: "12px", boxShadow: "0 6px 20px rgba(0,0,0,0.1)" }}>
             <Table className={Styles.table}>
               <TableHead sx={{ background: "#f1f5f9" }}>
                 <TableRow >
-                  <TableCell>Nom du groupe</TableCell>
-                  <TableCell >Étudiants</TableCell>
-                  <TableCell>Professeurs</TableCell>
-                  <TableCell>NombrmaxEtudiantes</TableCell>
-                  <TableCell>Frais de scolarité </TableCell>
-                  <TableCell sx={{ textAlign: "center" }}>Action</TableCell>
+                  <TableCell>{t('groupName')}</TableCell>
+                  <TableCell>{t('numberOfStudents')}</TableCell>
+                  <TableCell sx={{ textAlign: "center" }}>{t('actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody >
                 {groupe.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell>{item.name}</TableCell>
-                    <TableCell>{item.Studentid.length}</TableCell>
-                    <TableCell>0</TableCell>
-                    <TableCell>{item.Nbrmax}</TableCell>
-                    <TableCell>{item.fraisscolaire}.00DA</TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="primary" fontWeight="bold">
+                        {item.Studentid?.length || 0} étudiant{(item.Studentid?.length || 0) > 1 ? 's' : ''}
+                      </Typography>
+                    </TableCell>
                     <TableCell>
                       <Box display="flex" gap={1}>
-                        <Button onClick={() => { setidgroupe(item.id), getOnegroupe(item.id) }} startIcon={<Update />} size="small" variant="outlined">Modifier</Button>
-                        <Button onClick={() => setIdsupprimer(item.id)} startIcon={<DeleteIcon />} size="small" variant="outlined" color="error">Supprimer</Button>
-                        <Button onClick={() => { setidlist(item.id), getOnegroupe(item.id) }} startIcon={<VisibilityIcon />} size="small" variant="outlined">Voir</Button>
+                        <Button onClick={() => { setidgroupe(item.id), getOnegroupe(item.id) }} startIcon={<Update />} size="small" variant="outlined">{t('edit')}</Button>
+                        <Button onClick={() => setIdsupprimer(item.id)} startIcon={<DeleteIcon />} size="small" variant="outlined" color="error">{t('delete')}</Button>
+                        <Button onClick={() => { setidlist(item.id), getOnegroupe(item.id) }} startIcon={<VisibilityIcon />} size="small" variant="outlined">{t('view')}</Button>
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -250,14 +334,12 @@ export function Groupe() {
       <Modal open={showModal} onClose={() => setShowModal(false)}>
         <Box className={Styles.modalOverlay}>
           <Box className={Styles.modalContent} sx={{ maxWidth: "600px", borderRadius: "16px" }}>
-            <Typography variant="h6" fontWeight="bold" mb={2}>Ajouter un groupe</Typography>
+            <Typography variant="h6" fontWeight="bold" mb={2}>{t('addGroup')}</Typography>
             <form onSubmit={addnewGroupe} className={Styles.form}>
               <TextField inputRef={Name} label="Nom du groupe" required fullWidth margin="normal" />
-              <TextField inputRef={nbr} type='number' label="Nbr Max Eleves" required fullWidth margin="normal" />
-              <TextField inputRef={Friase} type='number' label="Frais de scolarité" required fullWidth margin="normal" />
               <Box mt={2} display="flex" justifyContent="flex-end" gap={2}>
-                <Button variant="contained" type="submit">Enregistrer</Button>
-                <Button variant="outlined" onClick={() => setShowModal(false)}>Annuler</Button>
+                <Button variant="contained" type="submit">{t('save')}</Button>
+                <Button variant="outlined" onClick={() => setShowModal(false)}>{t('cancel')}</Button>
               </Box>
             </form>
           </Box>
@@ -267,14 +349,12 @@ export function Groupe() {
       <Modal open={!!idgroupe} onClose={() => setidgroupe(null)}>
         <Box className={Styles.modalOverlay}>
           <Box className={Styles.modalContent} sx={{ maxWidth: "600px", borderRadius: "16px" }}>
-            <Typography variant="h6" fontWeight="bold" mb={2}>modifier un groupe</Typography>
+            <Typography variant="h6" fontWeight="bold" mb={2}>{t('editGroup')}</Typography>
             <form onSubmit={updateOne} className={Styles.form}>
               <TextField inputRef={Name} label="Nom du groupe" required fullWidth margin="normal" />
-              <TextField inputRef={nbr} type='number' label="Nbr Max Eleves" required fullWidth margin="normal" />
-              <TextField inputRef={Friase} type='number' label="Frais de scolarité" required fullWidth margin="normal" />
               <Box mt={2} display="flex" justifyContent="flex-end" gap={2}>
-                <Button variant="contained" type="submit">modifier</Button>
-                <Button variant="outlined" onClick={() => setidgroupe("")}>Annuler</Button>
+                <Button variant="contained" type="submit">{t('edit')}</Button>
+                <Button variant="outlined" onClick={() => setidgroupe("")}>{t('cancel')}</Button>
               </Box>
             </form>
           </Box>
@@ -284,10 +364,10 @@ export function Groupe() {
       <Modal open={idASupprimer !== null} onClose={() => setIdsupprimer(null)}>
         <Box className={Styles.modalOverlay}>
           <Box className={Styles.modalContent} sx={{ maxWidth: "400px", borderRadius: "16px", textAlign: "center" }}>
-            <Typography variant="h6" mb={2}>Êtes-vous sûr ?</Typography>
+            <Typography variant="h6" mb={2}>{t('confirmDelete')}</Typography>
             <Box display="flex" justifyContent="center" gap={2}>
-              <Button onClick={() => Deleteongroupe()} variant="contained" color="error">Oui</Button>
-              <Button onClick={() => setIdsupprimer(null)} variant="outlined">Non</Button>
+              <Button onClick={() => Deleteongroupe()} variant="contained" color="error">{t('yes')}</Button>
+              <Button onClick={() => setIdsupprimer(null)} variant="outlined">{t('no')}</Button>
             </Box>
           </Box>
         </Box>

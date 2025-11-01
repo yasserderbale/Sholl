@@ -16,11 +16,14 @@ import Matier from "./routes/Matieres";
 import Abcense from "./routes/Abcenses";
 import Paimentes from "./routes/Paimentes";
 import Dachborde from "./routes/Dachbord";
+import Dashboard from "./routes/Dashboard";
 import Groupes from "./routes/Groupes";
 import Classe from "./routes/ClasseRoute";
 import GroupeTims from "./routes/GroupeRoute";
 import Teachers from "./routes/Teachers";
+import Settings from "./routes/Settings";
 import { createTeachersTable } from "./models/sqlite/TeacherModel";
+import { createPaiementsFrTable } from "./services/PaiementsFrServiceFixed";
 import { ensureAdmin } from "./services/LogineSqlite";
 const app = express();
 app.use(express.json());
@@ -37,6 +40,7 @@ try {
   createAbcensesTable();
   createLoginTable();
   createTeachersTable();
+  createPaiementsFrTable(); // Table pour les paiements en français
   // seed default admin if missing
   ensureAdmin("Admin", "Admin");
   console.log("SQLite DB initialized");
@@ -48,12 +52,14 @@ app.use(loginAdmn);
 app.use(Student);
 app.use(Matier);
 app.use(Abcense);
-app.use(Paimentes);
+app.use(Paimentes); // Routes originales + nouvelles routes en français
 app.use(Dachborde);
+app.use(Dashboard); // Dashboard statistics API
 app.use(Groupes);
 app.use(Classe);
 app.use(GroupeTims);
 app.use(Teachers);
+app.use(Settings);
 
 const port = 3000;
 app.listen(port, () => {

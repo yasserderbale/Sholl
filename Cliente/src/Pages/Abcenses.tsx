@@ -35,6 +35,7 @@ import {
   ArrowBack
 } from '@mui/icons-material'; // Ajout de ArrowBack
 import { usAuth } from '../Context/AuthContext';
+import { useLanguage } from '../Context/LanguageContext';
 
 // Types
 type Student = {
@@ -57,6 +58,7 @@ type Absence = {
 };
 
 const Abcenses = () => {
+  const { t } = useLanguage();
   const { groupe, stude, tocken } = usAuth() as {
     groupe: Group[];
     stude: Student[];
@@ -252,13 +254,13 @@ const Abcenses = () => {
     return (
       <>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h4">Gestion des Absences</Typography>
+          <Typography variant="h4">{t('absenceManagement')}</Typography>
           <Box display="flex" gap={2}>
             <Button
               variant="outlined"
               onClick={() => setOpenStudentListModal(true)}
             >
-              Liste des élèves
+              {t('studentList')}
             </Button>
             <Button
               variant="contained"
@@ -273,7 +275,7 @@ const Abcenses = () => {
                 }
               }}
             >
-              Ajouter une absence
+              {t('addAbsence')}
             </Button>
           </Box>
         </Box>
@@ -307,12 +309,16 @@ const Abcenses = () => {
         {selectedGroup && (
           <Box mb={4}>
             <Typography variant="h6" gutterBottom>
-              Absences - {groupe.find(g => g.id === selectedGroup)?.name}
+              {t('absences')} - {groupe.find(g => g.id === selectedGroup)?.name}
             </Typography>
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
                   <TableRow>
+                    <TableCell>{t('student')}</TableCell>
+                    <TableCell align="center">{t('numberOfAbsences')}</TableCell>
+                    <TableCell align="center">{t('lastAbsence')}</TableCell>
+                    <TableCell align="center">{t('actions')}</TableCell>
                     <TableCell>Élève</TableCell>
                     <TableCell align="center">Nombre d'absences</TableCell>
                     <TableCell align="center">Dernière absence</TableCell>
@@ -497,16 +503,16 @@ const Abcenses = () => {
           width: 500, bgcolor: 'background.paper', boxShadow: 24, p: 4, borderRadius: 2
         }}>
           <Box display="flex" justifyContent="space-between" mb={3}>
-            <Typography variant="h6">{editingAbsence ? 'Modifier' : 'Nouvelle'} absence</Typography>
+            <Typography variant="h6">{editingAbsence ? t('edit') : t('new')} {t('singleAbsence')}</Typography>
             <IconButton onClick={closeModal}><CloseIcon /></IconButton>
           </Box>
 
           <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Étudiants</InputLabel>
+            <InputLabel>{t('students')}</InputLabel>
             <Select
               multiple
               value={selectedStudents}
-              label="Étudiants"
+              label={t('students')}
               onChange={e => setSelectedStudents(e.target.value as string[])}
               renderValue={selected => (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -554,7 +560,7 @@ const Abcenses = () => {
           width: 700, bgcolor: 'background.paper', boxShadow: 24, p: 4, borderRadius: 2, maxHeight: '90vh', overflow: 'auto'
         }}>
           <Box display="flex" justifyContent="space-between" mb={3}>
-            <Typography variant="h6">Liste des élèves par groupe</Typography>
+            <Typography variant="h6">{t('studentListByGroup')}</Typography>
             <IconButton onClick={() => setOpenStudentListModal(false)}><CloseIcon /></IconButton>
           </Box>
 

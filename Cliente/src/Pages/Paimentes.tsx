@@ -1,29 +1,38 @@
-import  React, {  useEffect, useRef, useState  } from 'react';
-import Styles from '../Styles/Paimentes.module.css';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
-  TextField,
   Button,
+  Chip,
+  Modal,
+  TextField,
   Table,
+  TableBody,
+  TableCell,
+  TableContainer,
   TableHead,
   TableRow,
-  TableCell,
-  TableBody,
-  Paper,
-  Modal,
   Select,
   MenuItem,
-  OutlinedInput,
-  type SelectChangeEvent,
-  TableContainer,
-  
+  Snackbar,
+  Alert,
+  InputAdornment,
+  OutlinedInput
 } from '@mui/material';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
+import type { SelectChangeEvent } from '@mui/material';
+import {
+  Add as AddIcon,
+  Search,
+  Receipt,
+  Payment,
+  Visibility as VisibilityIcon,
+  MonetizationOn as MonetizationOnIcon
+} from '@mui/icons-material';
 import { usAuth } from '../Context/AuthContext';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import AddIcon from '@mui/icons-material/Add';
-import { Snackbar, Alert } from "@mui/material";
+import { useLanguage } from '../Context/LanguageContext';
+import { useSchool } from '../Context/SchoolContext';
+import Styles from '../Styles/Paimentes.module.css';
+
 export function Paimentes() {
    const [toast, setToast] = useState<{open:boolean, message:string, severity:"success"|"error"|"info"|"warning"}>({
     open: false,
@@ -31,7 +40,9 @@ export function Paimentes() {
     severity: "success",
   });
 const [showModal, setShowModal] = useState(false);
-const {stude,tocken} = usAuth()
+const {stude,tocken} = usAuth();
+const { t, language, setLanguage } = useLanguage();
+const { settings } = useSchool();
 const Moise = ['janvier','fevrier','marse','avrile','mey','joine','juillet','aute','september','october','november','december']
 const [modlesStud,setmodlesStud]=useState<any>({})
 let modelsSelect = (modlesStud.modules?.map((name:any)=>name.matid))
@@ -41,11 +52,9 @@ const [prix,setprix]=useState<number>(0)
 const [color,setcolor]= useState<any>("") 
 const [getpaimentes,setgetpaimentes]=useState([])
 const [modalPaimetes,setmodalPaimetes]=useState<any>(null)
-const [onPaimentsget,setonPaimentsget]=useState<any>({})
 const [completepaymodal,setcompletepaymodal]=useState(false)
 const [idstudent,setidstudent]=useState(null)
 const [idpaimente,setidpaimente]=useState(null)
-console.log("hadi ta3 studente",idstudent,"hadi ta3 paimente",idpaimente)
 const hadnlMois =(e:SelectChangeEvent<any[]>)=>{
  const {value} = e.target 
  setmois(value)
@@ -192,6 +201,120 @@ const SearchePai = async(search:any)=>{
 const valPrice = useRef<any>(null)
   return (
     <Box className={Styles.page} p={3}>
+      {/* العنوان وحقل البحث */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Box display="flex" alignItems="center">
+          <Payment sx={{ fontSize: 35, color: 'primary.main', mr: 2 }} />
+          <Typography variant="h4" gutterBottom>
+            Gestion des Paiements
+          </Typography>
+        </Box>
+        
+        {/* مبدل اللغة */}
+        <Box display="flex" alignItems="center" gap={2}>
+          <Typography variant="body2" color="text.secondary">
+            Langue / اللغة:
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              backgroundColor: '#f5f5f5',
+              borderRadius: '20px',
+              p: 0.5
+            }}
+          >
+            <Button
+              size="small"
+              onClick={() => setLanguage('fr')}
+              sx={{
+                minWidth: '60px',
+                borderRadius: '15px',
+                backgroundColor: language === 'fr' ? 'primary.main' : 'transparent',
+                color: language === 'fr' ? 'white' : 'text.secondary',
+                '&:hover': {
+                  backgroundColor: language === 'fr' ? 'primary.dark' : 'rgba(0,0,0,0.04)'
+                }
+              }}
+            >
+              FR
+            </Button>
+            <Button
+              size="small"
+              onClick={() => setLanguage('ar')}
+              sx={{
+                minWidth: '60px',
+                borderRadius: '15px',
+                backgroundColor: language === 'ar' ? 'primary.main' : 'transparent',
+                color: language === 'ar' ? 'white' : 'text.secondary',
+                '&:hover': {
+                  backgroundColor: language === 'ar' ? 'primary.dark' : 'rgba(0,0,0,0.04)'
+                }
+              }}
+            >
+              عر
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* حقل البحث المحسن */}
+      <Box 
+        mb={3} 
+        display="flex" 
+        gap={2} 
+        alignItems="center"
+        sx={{
+          backgroundColor: '#f8f9fa',
+          padding: 2,
+          borderRadius: '12px',
+          border: '1px solid #e9ecef'
+        }}
+      >
+        <TextField
+          onChange={(e) => SearchePai(e.target.value)}
+          label="🔍 Rechercher un étudiant"
+          variant="outlined"
+          size="medium"
+          placeholder="Tapez le nom de l'étudiant..."
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search sx={{ color: 'primary.main', fontSize: 24 }} />
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            flex: 1,
+            maxWidth: 400,
+            '& .MuiOutlinedInput-root': {
+              backgroundColor: 'white',
+              borderRadius: '10px',
+              '&:hover': {
+                '& > fieldset': {
+                  borderColor: 'primary.main',
+                },
+              },
+            },
+            '& .MuiInputLabel-root': {
+              color: 'primary.main',
+              fontWeight: 'bold'
+            }
+          }}
+        />
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setShowModal(true)}
+          sx={{
+            borderRadius: "10px",
+            textTransform: "none",
+            height: "40px"
+          }}
+        >
+          Ajouter Paiement
+        </Button>
+      </Box>
+
       <Snackbar
         open={toast.open}
         autoHideDuration={3000}
@@ -201,78 +324,144 @@ const valPrice = useRef<any>(null)
         <Alert
           onClose={() => setToast({ ...toast, open: false })}
           severity={toast.severity}
-          sx={{ width: "100%"}}
+          sx={{ width: "100%" }}
         >
           {toast.message}
         </Alert>
       </Snackbar>
-      <Typography variant="h4" gutterBottom className={Styles.title}>
-        Gestion des paiements
-      </Typography>
-      <Box className={Styles.actions} display="flex" gap={2} mb={2}>
-        <TextField
-        onChange={(e:any)=>{SearchePai(e.target.value)}}
-          label="🔍 Rechercher par nom"
-          variant="outlined"
-          size="small"
+
+      {/* جدول المدفوعات المحسن */}
+      {getpaimentes && getpaimentes.length > 0 ? (
+        <Box
           sx={{
-            width:250,
-            background:"#f9fafb",
-            borderRadius:"10px"
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            overflow: 'hidden'
           }}
-        />
-        <Button
-         startIcon={<AddIcon />}
-          variant="contained"
-          color="primary"
-         sx={{ borderRadius:"10px", textTransform:"none" }}
-          onClick={() => setShowModal(true)}
-          className={Styles.btnAjouter}
         >
-           Ajouter Paiement
-        </Button>
-      </Box>
-      
-      {getpaimentes.length ==0 ?
-     <Typography
-              variant="body1"
-              align="center"
-              color="textSecondary"
-              style={{ marginTop: "29px" }}
+          <Box
+            sx={{
+              backgroundColor: 'primary.main',
+              color: 'white',
+              p: 2,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              flexDirection: 'column'
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%', justifyContent: 'center' }}>
+              <Receipt sx={{ fontSize: 24 }} />
+              <Typography variant="h6" fontWeight="bold">
+                Liste des Paiements ({getpaimentes.length} étudiants)
+              </Typography>
+            </Box>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                opacity: 0.9, 
+                textAlign: 'center',
+                direction: language === 'ar' ? 'rtl' : 'ltr'
+              }}
             >
-              Aucun résultat trouvé.
-            </Typography>  :
-      <Paper> 
-  <TableContainer>
-         <Table className={Styles.table}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Élève</TableCell>
-              <TableCell>	Nombre d'Paimentes</TableCell>
-              <TableCell>Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {getpaimentes.map((item:any)=>(
-               <TableRow key={item._id}>
-                <TableCell>{item.idStud.Name}</TableCell>
-                <TableCell>{item.paimentes.length}</TableCell>
-                <TableCell>
-                  <Button
-                  onClick={()=>setmodalPaimetes(item)}
-                  variant='outlined'
-                  size='small'
-                  startIcon={<VisibilityIcon/>}>
-                   Voir Detaille
-                  </Button>
-                  </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-       </TableContainer>
-       </Paper>
-    }
+              {language === 'ar' ? settings.schoolNameAr : settings.schoolNameFr}
+            </Typography>
+          </Box>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: '#f8f9fa' }}>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>👤 Étudiant</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>📚 Matières</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>💰 Montant</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>📊 Status</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', color: 'primary.main' }}>⚙️ Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {getpaimentes.map((item: any, index: number) => (
+                  <TableRow 
+                    key={item._id}
+                    sx={{
+                      backgroundColor: index % 2 === 0 ? 'white' : '#f8f9fa',
+                      '&:hover': {
+                        backgroundColor: '#e3f2fd',
+                        transform: 'scale(1.01)',
+                        transition: 'all 0.2s ease-in-out'
+                      }
+                    }}
+                  >
+                    <TableCell sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+                      {item.idStud?.Name}
+                    </TableCell>
+                    <TableCell sx={{ color: 'text.secondary' }}>
+                      {item.paimentes?.map((p: any) => 
+                        p.matieres?.map((m: any) => m.idMat?.name).join(", ")
+                      ).join(", ")}
+                    </TableCell>
+                    <TableCell>
+                      <Box
+                        sx={{
+                          backgroundColor: 'success.light',
+                          color: 'success.dark',
+                          px: 2,
+                          py: 0.5,
+                          borderRadius: '20px',
+                          fontWeight: 'bold',
+                          display: 'inline-block'
+                        }}
+                      >
+                        {item.paimentes?.reduce((sum: number, p: any) => sum + (p.Montante || 0), 0)} DA
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={item.paimentes?.some((p: any) => typeof p.status === 'number') ? 'Partiel' : 'Complet'}
+                        color={item.paimentes?.some((p: any) => typeof p.status === 'number') ? 'warning' : 'success'}
+                        size="small"
+                        sx={{ fontWeight: 'bold' }}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        onClick={() => setmodalPaimetes(item)}
+                        variant="contained"
+                        size="small"
+                        startIcon={<VisibilityIcon />}
+                        sx={{
+                          borderRadius: '20px',
+                          textTransform: 'none',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        }}
+                      >
+                        Voir Détails
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            textAlign: 'center',
+            py: 4,
+            backgroundColor: '#f8f9fa',
+            borderRadius: '12px',
+            border: '2px dashed #dee2e6'
+          }}
+        >
+          <Typography variant="h6" color="text.secondary">
+            Aucun paiement trouvé
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Utilisez la recherche pour trouver des étudiants ou ajoutez un nouveau paiement
+          </Typography>
+        </Box>
+      )}
       
       {/**Modal pour ajouter */}
       <Modal open={showModal} onClose={() => setShowModal(false)}>

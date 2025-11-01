@@ -19,8 +19,11 @@ import {
   TextField,
   Snackbar,
   Alert,
+  TablePagination,
+  Chip,
+  InputAdornment,
 } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
+import { Add as AddIcon, Search } from "@mui/icons-material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { Update } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -29,6 +32,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
 import dayjs, { Dayjs } from "dayjs";
 import { usAuth } from "../Context/AuthContext";
+import { useLanguage } from "../Context/LanguageContext";
 
 type Day =
   | "Dimanche"
@@ -67,7 +71,8 @@ const daysOfWeek: Day[] = [
 ];
 
 const Classes: React.FC = () => {
-  const { tocken, groupe } = usAuth();
+  const { tocken, groupe, stude } = usAuth();
+  const { t } = useLanguage();
   const [classes, setClasses] = useState<Classe[]>([]);
   const [classGroups, setClassGroups] = useState<ClassGroupsState>({});
   const [selectedClass, setSelectedClass] = useState<Classe | null>(null);
@@ -88,6 +93,7 @@ const Classes: React.FC = () => {
   const [heureDebut, setHeureDebut] = useState<Dayjs | null>(null);
   const [heureFin, setHeureFin] = useState<Dayjs | null>(null);
   const [selectedDays, setSelectedDays] = useState<Day[]>([]);
+  const [salle, setSalle] = useState("");
   const [isEditingGroup, setIsEditingGroup] = useState(false);
   const [editGroupId, setEditGroupId] = useState<string | null>(null);
 
@@ -97,6 +103,13 @@ const Classes: React.FC = () => {
     message: "",
     severity: "success" as "success" | "error",
   });
+  
+  // Pagination
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  
+  // Search
+  const [searchTerm, setSearchTerm] = useState("");
   const API_URL = "http://localhost:3000";
 
   // === Fetch All Classes ===
@@ -122,7 +135,6 @@ const Classes: React.FC = () => {
       if (data.StatusCode === 200) {
         setClassGroups((prev) => ({ ...prev, [classeId]: data.data }));
       }
-      console.log(classGroups)
     } catch (err) {
       console.error("Erreur chargement groupes:", err);
     }
@@ -195,7 +207,7 @@ const Classes: React.FC = () => {
 
   // === Delete Class ===
   const handleDeleteClass = async (id: string) => {
-    if (!window.confirm("Supprimer cette classe ?")) return;
+    if (!window.confirm(t('confirmDeleteClass'))) return;
     try {
       const res = await fetch(`${API_URL}/DeleteClasse/${id}`, {
         method: "DELETE",
@@ -290,7 +302,7 @@ const Classes: React.FC = () => {
   };
 
   const handleDeleteGroup = async (groupeId: string) => {
-    if (!window.confirm("Supprimer ce groupe ?")) return;
+    if (!window.confirm(t('confirmDeleteGroup'))) return;
     try {
       const res = await fetch(`${API_URL}/DeleteGroupe/${groupeId}`, {
         method: "DELETE",
@@ -324,6 +336,16 @@ const Classes: React.FC = () => {
     setShowAddGroupModal(true);
   };
 
+  // Filtrage et pagination
+  const filteredClasses = classes.filter((c: any) =>
+    c.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
+  const paginatedClasses = filteredClasses.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
   useEffect(() => {
     fetchClasses();
   }, []);
@@ -331,7 +353,26 @@ const Classes: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box className={Styles.page} p={3}>
-        <Box display="flex" justifyContent="flex" mb={2} gap={2}>
+        <Typography variant="h4" className={Styles.title} gutterBottom>
+          {t('classManagement')}
+        </Typography>
+        
+        <Box display="flex" justifyContent="space-between" mb={2} gap={2}>
+          <TextField
+            label={`${t('search')}`}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search sx={{ color: 'action.active' }} />
+                </InputAdornment>
+              ),
+            }}
+            variant="outlined"
+            size="small"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ width: 300 }}
+          />
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -342,42 +383,91 @@ const Classes: React.FC = () => {
               setNewClassNotes("");
             }}
           >
-            Ajouter Classe
+            {t('addClass')}
           </Button>
         </Box>
 
         {/* Table des classes */}
-        <Paper>
+        <Paper sx={{ borderRadius: "12px", boxShadow: "0 6px 20px rgba(0,0,0,0.1)" }}>
           <Table>
             <TableHead sx={{ background: "#f1f5f9" }}>
               <TableRow>
                 <TableCell>#</TableCell>
-                <TableCell>Nom Classe</TableCell>
-                <TableCell>Notes</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>{t('className')}</TableCell>
+                <TableCell>{t('groups')}</TableCell>
+                <TableCell>{t('notes')}</TableCell>
+                <TableCell align="center">{t('actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {classes.map((c: any, i) => (
-                <TableRow key={(c as any).id}>
-                  <TableCell>{i + 1}</TableCell>
-                  <TableCell>{c.name}</TableCell>
-                  <TableCell>{c.notes}</TableCell>
-                  <TableCell>
-                    <IconButton color="primary" onClick={() => handleOpenGroupsModal(c)}>
-                      <VisibilityIcon />
-                    </IconButton>
-                    <IconButton color="secondary" onClick={() => handleEditClass(c)}>
-                      <Update />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleDeleteClass((c as any).id)}>
-                      <DeleteIcon />
-                    </IconButton>
+              {paginatedClasses.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">
+                    <Typography color="textSecondary">
+                      {searchTerm ? t('noData') : t('noData')}
+                    </Typography>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                paginatedClasses.map((c: any, i) => {
+                  const groupCount = classGroups[c.id]?.length || 0;
+                  return (
+                    <TableRow key={c.id}>
+                      <TableCell>{page * rowsPerPage + i + 1}</TableCell>
+                      <TableCell>
+                        <Typography variant="body1" fontWeight="bold">
+                          {c.name}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip 
+                          label={`${groupCount} groupe${groupCount > 1 ? 's' : ''}`}
+                          color={groupCount > 0 ? "primary" : "default"}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body2" color="textSecondary">
+                          {c.notes || "-"}
+                        </Typography>
+                      </TableCell>
+                      <TableCell align="center">
+                        <Box display="flex" gap={1} justifyContent="center">
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={<VisibilityIcon />}
+                            onClick={() => handleOpenGroupsModal(c)}
+                          >
+                            {t('view')}
+                          </Button>
+                          <IconButton color="secondary" onClick={() => handleEditClass(c)}>
+                            <Update />
+                          </IconButton>
+                          <IconButton color="error" onClick={() => handleDeleteClass(c.id)}>
+                            <DeleteIcon />
+                          </IconButton>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
+          <TablePagination
+            component="div"
+            count={filteredClasses.length}
+            page={page}
+            onPageChange={(e, newPage) => setPage(newPage)}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={(e) => {
+              setRowsPerPage(parseInt(e.target.value, 10));
+              setPage(0);
+            }}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            labelRowsPerPage={`${t('rowsPerPage')}:`}
+          />
         </Paper>
 
         {/* === Modal Add/Edit Classe === */}
@@ -385,19 +475,19 @@ const Classes: React.FC = () => {
           <Box className={Styles.modalOverlay}>
             <Box className={Styles.modalContent}>
               <Typography variant="h6" mb={2}>
-                {isEditingClass ? "Modifier la Classe" : "Ajouter une nouvelle Classe"}
+                {isEditingClass ? t('edit') + ' ' + t('classes') : t('addClass')}
               </Typography>
               <form onSubmit={handleSubmitClass}>
                 <TextField
                   fullWidth
-                  label="Nom Classe"
+                  label={t('className')}
                   value={newClassName}
                   onChange={(e) => setNewClassName(e.target.value)}
                   required
                 />
                 <TextField
                   fullWidth
-                  label="Notes"
+                  label={`${t('notes')} (${t('optional')})`}
                   value={newClassNotes}
                   onChange={(e) => setNewClassNotes(e.target.value)}
                   multiline
@@ -406,10 +496,10 @@ const Classes: React.FC = () => {
                 />
                 <Box mt={3} display="flex" justifyContent="flex-end" gap={2}>
                   <Button variant="outlined" onClick={() => setShowAddClassModal(false)}>
-                    Annuler
+                    {t('cancel')}
                   </Button>
                   <Button type="submit" variant="contained">
-                    {isEditingClass ? "Modifier" : "Ajouter"}
+                    {isEditingClass ? t('edit') : t('add')}
                   </Button>
                 </Box>
               </form>
@@ -422,7 +512,7 @@ const Classes: React.FC = () => {
           <Box className={Styles.modalOverlay}>
             <Box className={Styles.modalContent}>
               <Typography variant="h6" mb={2}>
-                Groupes de {selectedClass?.name}
+                {t('groups')} {selectedClass?.name}
               </Typography>
               <Button
                 variant="contained"
@@ -436,17 +526,17 @@ const Classes: React.FC = () => {
                   setHeureFin(null);
                 }}
               >
-                Ajouter Groupe
+                {t('add')} {t('groups')}
               </Button>
 
               <Table sx={{ mt: 2 }}>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Nom</TableCell>
-                    <TableCell>Début</TableCell>
-                    <TableCell>Fin</TableCell>
-                    <TableCell>Jours</TableCell>
-                    <TableCell>Actions</TableCell>
+                    <TableCell>{t('name')}</TableCell>
+                    <TableCell>{t('start')}</TableCell>
+                    <TableCell>{t('end')}</TableCell>
+                    <TableCell>{t('days')}</TableCell>
+                    <TableCell>{t('actions')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -471,7 +561,7 @@ const Classes: React.FC = () => {
               </Table>
               <Box display="flex" justifyContent="flex-end" mt={2}>
                 <Button variant="outlined" onClick={() => setShowGroupsModal(false)}>
-                  Fermer
+                  {t('close')}
                 </Button>
               </Box>
             </Box>
@@ -484,25 +574,34 @@ const Classes: React.FC = () => {
             <Box className={Styles.modalContent}>
               <Typography variant="h6" mb={2}>
                 {isEditingGroup
-                  ? `Modifier Groupe ${groupName}`
-                  : `Ajouter Groupe à ${selectedClass?.name}`}
+                  ? `${t('edit')} ${t('groups')} ${groupName}`
+                  : `${t('add')} ${t('groups')} ${selectedClass?.name}`}
               </Typography>
 
               <form onSubmit={handleSubmitGroup}>
                 {/* === Nom du groupe === */}
                 {!isEditingGroup && ( // 👈 نخبي الـ Select كي نكون في وضع Modifier
                   <>
-                    <FormLabel>Nom du groupe</FormLabel>
+                    <FormLabel>{t('groupName')}</FormLabel>
                     <Select
                       fullWidth
                       value={groupName}
                       onChange={(e) => setGroupName(e.target.value)}
                     >
-                      {groupe?.map((g: any) => (
-                        <MenuItem key={(g as any).id} value={g.name}>
-                          {g.name} — ({g.Nbrmax} élèves)
-                        </MenuItem>
-                      ))}
+                      {groupe?.map((g: any) => {
+                        // حساب العدد الفعلي للطلاب في المجموعة من بيانات الطلاب
+                        const actualStudentCount = stude ? 
+                          stude.filter((student: any) => 
+                            student.Groupe && student.Groupe.includes(g.id)
+                          ).length : 0;
+                        const maxStudents = g.Nbrmax || 0;
+                        
+                        return (
+                          <MenuItem key={(g as any).id} value={g.name}>
+                            {g.name} — ({actualStudentCount}/{maxStudents} {t('students')})
+                          </MenuItem>
+                        );
+                      })}
                     </Select>
                   </>
                 )}
@@ -510,19 +609,29 @@ const Classes: React.FC = () => {
                 {/* === Time pickers === */}
                 <Box display="flex" gap={2} mt={2}>
                   <TimePicker
-                    label="Heure début"
+                    label={t('startTime')}
                     value={heureDebut}
                     onChange={(v) => setHeureDebut(v)}
                   />
                   <TimePicker
-                    label="Heure fin"
+                    label={t('endTime')}
                     value={heureFin}
                     onChange={(v) => setHeureFin(v)}
                   />
                 </Box>
 
+                {/* === Salle === */}
+                <TextField
+                  fullWidth
+                  label={t('room')}
+                  value={salle}
+                  onChange={(e) => setSalle(e.target.value)}
+                  sx={{ mt: 2 }}
+                  placeholder="Ex: A1, B2, C3..."
+                />
+
                 {/* === Jours === */}
-                <FormLabel sx={{ mt: 2 }}>Jours</FormLabel>
+                <FormLabel sx={{ mt: 2 }}>{t('days')}</FormLabel>
                 <Select
                   fullWidth
                   multiple
@@ -541,10 +650,10 @@ const Classes: React.FC = () => {
                 {/* === Boutons === */}
                 <Box display="flex" justifyContent="flex-end" gap={2} mt={3}>
                   <Button variant="outlined" onClick={() => setShowAddGroupModal(false)}>
-                    Annuler
+                    {t('cancel')}
                   </Button>
                   <Button type="submit" variant="contained">
-                    {isEditingGroup ? "Modifier" : "Ajouter"}
+                    {isEditingGroup ? t('edit') : t('add')}
                   </Button>
                 </Box>
               </form>

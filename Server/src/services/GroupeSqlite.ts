@@ -13,14 +13,12 @@ import {
 export const AddnewGroup = async ({
   identifaite,
   name,
-  nbrmax,
-  fraise,
 }: any) => {
   if (!identifaite) return { StatusCode: 401, data: "no token" };
-  if (!name || !nbrmax || !fraise)
+  if (!name)
     return { StatusCode: 400, data: "missing fields" };
   createGroupesTable();
-  const g = createGroupe({ name, Nbrmax: nbrmax, fraisscolaire: fraise });
+  const g = createGroupe({ name });
   return { StatusCode: 200, data: g };
 };
 
@@ -46,11 +44,9 @@ export const Updateongroupe = async ({
   identifaite,
   idgroupe,
   name,
-  Nbrmax,
-  fraisscolaire,
 }: any) => {
   if (!identifaite) return { StatusCode: 401, data: "no token" };
-  const updated = updateGroupe(idgroupe, { name, Nbrmax, fraisscolaire });
+  const updated = updateGroupe(idgroupe, { name });
   return { StatusCode: 200, data: updated };
 };
 

@@ -17,9 +17,14 @@ export const AddnewGroup = async ({
   if (!identifaite) return { StatusCode: 401, data: "no token" };
   if (!name)
     return { StatusCode: 400, data: "missing fields" };
-  createGroupesTable();
-  const g = createGroupe({ name });
-  return { StatusCode: 200, data: g };
+  
+  try {
+    createGroupesTable();
+    const g = createGroupe({ name });
+    return { StatusCode: 200, data: g };
+  } catch (error: any) {
+    return { StatusCode: 400, data: error.message || "Erreur lors de la création du groupe" };
+  }
 };
 
 export const GetAllgroupes = async ({ identifaite }: any) => {
@@ -46,8 +51,13 @@ export const Updateongroupe = async ({
   name,
 }: any) => {
   if (!identifaite) return { StatusCode: 401, data: "no token" };
-  const updated = updateGroupe(idgroupe, { name });
-  return { StatusCode: 200, data: updated };
+  
+  try {
+    const updated = updateGroupe(idgroupe, { name });
+    return { StatusCode: 200, data: updated };
+  } catch (error: any) {
+    return { StatusCode: 400, data: error.message || "Erreur lors de la mise à jour du groupe" };
+  }
 };
 
 export const Searchgr = async ({ identifaite, search }: any) => {

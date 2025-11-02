@@ -26,6 +26,17 @@ export function createGroupesTable() {
 }
 
 export function createGroupe(payload: Partial<Groupe>) {
+  // التحقق من وجود اسم مشابه (case-insensitive)
+  if (payload.name) {
+    const existing = get<any>(
+      `SELECT * FROM groupes WHERE LOWER(name) = LOWER(?)`,
+      [payload.name]
+    );
+    if (existing) {
+      throw new Error(`Un groupe avec le nom "${payload.name}" existe déjà`);
+    }
+  }
+  
   const id = uuidv4();
   const now = new Date().toISOString();
   run(
@@ -67,6 +78,17 @@ export function searchGroupesByName(name: string) {
 }
 
 export function updateGroupe(id: string, updates: Partial<Groupe>) {
+  // التحقق من وجود اسم مشابه (case-insensitive) عند تحديث الاسم
+  if (updates.name !== undefined) {
+    const existing = get<any>(
+      `SELECT * FROM groupes WHERE LOWER(name) = LOWER(?) AND id != ?`,
+      [updates.name, id]
+    );
+    if (existing) {
+      throw new Error(`Un groupe avec le nom "${updates.name}" existe déjà`);
+    }
+  }
+  
   const now = new Date().toISOString();
   const sets: string[] = [];
   const params: any[] = [];

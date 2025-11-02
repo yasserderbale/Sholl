@@ -20,34 +20,20 @@ route.get('/dashboard/stats', validatejwt, async (req, res) => {
       WHERE strftime('%m', Date) = ? AND strftime('%Y', Date) = ?
     `).get(currentMonth.toString().padStart(2, '0'), currentYear.toString()) as { count: number };
     
-    // 3. كل المدفوعات (من كلا الجدولين)
+    // 3. المدفوعات من paiements_fr فقط
     let paymentsCount = 0;
     let totalAmount = 0;
     
-    // محاولة من paiements_fr (كل المدفوعات)
     try {
       const paymentsFr = db.prepare(`
         SELECT COUNT(*) as count, SUM(CAST(montant AS REAL)) as total 
         FROM paiements_fr
       `).get() as { count: number; total: number | null };
       
-      paymentsCount += paymentsFr?.count || 0;
-      totalAmount += paymentsFr?.total || 0;
+      paymentsCount = paymentsFr?.count || 0;
+      totalAmount = paymentsFr?.total || 0;
     } catch (e) {
       console.log('Table paiements_fr not found or empty');
-    }
-    
-    // محاولة من paiements القديم
-    try {
-      const paymentsOld = db.prepare(`
-        SELECT COUNT(*) as count, SUM(CAST(prix AS REAL)) as total 
-        FROM paiements
-      `).get() as { count: number; total: number | null };
-      
-      paymentsCount += paymentsOld?.count || 0;
-      totalAmount += paymentsOld?.total || 0;
-    } catch (e) {
-      console.log('Table paiements not found or empty');
     }
     
     const paymentsThisMonth = { count: paymentsCount };

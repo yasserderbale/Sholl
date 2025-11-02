@@ -1,0 +1,49 @@
+# أوامر تنظيف المشروع
+
+## الملفات التي يجب حذفها يدوياً من VS Code:
+
+1. Server/src/services/PaiementsFrService.ts (مكسور - نستخدم PaiementsFrServiceFixed.ts)
+2. Server/routes/paiements.js (مكرر)
+3. Server/school.db (فارغ)
+4. Server/check_months.js (غير مستخدم)
+5. Server/src/routes/Dachbord.ts (قديم - نستخدم Dashboard.ts)
+
+## ملفات MongoDB القديمة (حذف كامل المجلد):
+
+### Models:
+- Server/src/models/Abcenses.ts
+- Server/src/models/Classe.ts
+- Server/src/models/Groupe.ts
+- Server/src/models/GroupeTimes.ts
+- Server/src/models/Logine.ts
+- Server/src/models/Matieres.ts
+- Server/src/models/Paimentes.ts
+- Server/src/models/Student.ts
+
+### Services:
+- Server/src/services/Abcense.ts
+- Server/src/services/ClassService.ts
+- Server/src/services/Dachborde.ts
+- Server/src/services/Groupe.ts
+- Server/src/services/GroupeService.ts
+- Server/src/services/Logineadmin.ts
+- Server/src/services/Matieres.ts
+- Server/src/services/Paimentes.ts
+- Server/src/services/Registerstud.ts
+
+---
+
+## بعد الحذف، عدل index.ts:
+
+احذف هذه الأسطر:
+- السطر 3: import mongoose from "mongoose";
+- السطر 18: import Dachborde from "./routes/Dachbord";
+- السطر 26: import { createPaiementsFrTable } from "./services/PaiementsFrServiceFixed";
+- السطر 43: createPaiementsFrTable();
+- السطر 57: app.use(Dachborde);
+
+---
+
+## ملاحظة مهمة:
+PaiementsFrService.ts مكسور ويحتوي على أخطاء كثيرة.
+نستخدم PaiementsFrServiceFixed.ts الذي يعمل بشكل صحيح.

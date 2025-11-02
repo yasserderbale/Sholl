@@ -10,6 +10,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  TableContainer,
   Paper,
   Modal,
   Select,
@@ -23,11 +24,14 @@ import {
   FormControlLabel,
   Radio,
   Card,
-  CardContent
+  CardContent,
+  TablePagination,
+  InputAdornment
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Add as AddIcon, Search } from '@mui/icons-material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { usAuth } from '../Context/AuthContext';
+import { useLanguage } from '../Context/LanguageContext';
 import { CalendarToday, Class, DateRange, Diversity3, Person, Phone, School, Update } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 const ITEM_HEIGHT = 48;
@@ -50,6 +54,8 @@ export function Etudiantes() {
   const [Nivuea, setniveau] = useState<any>("")
   const [Spécialité, setspecialite] = useState<any>("")
   const [Groupe, setGroupe] = useState<string[]>([])
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const handlnivuea = (event: SelectChangeEvent) => {
     const { value } = event.target
     setniveau(value)
@@ -66,7 +72,8 @@ export function Etudiantes() {
     const { value } = event.target
     setModules(typeof (value) === 'string' ? value.split(',') : value)
   };
-  const { mat, tocken, getStudentes, stude, seracheStud, groupe, getgroupes } = usAuth()
+  const { mat, tocken, getStudentes, stude, seracheStud, groupe, getgroupes } = usAuth();
+  const { t } = useLanguage();
   const name = useRef<HTMLInputElement>(null)
   const age = useRef<HTMLInputElement>(null)
   const phone = useRef<HTMLInputElement>(null)
@@ -82,6 +89,17 @@ export function Etudiantes() {
     const Age = age.current?.value
     const Telephone = phone.current?.value
     const Date = date.current?.value
+    
+    // Vérification: empêcher les noms dupliqués
+    const nameExists = stude.some((student: any) => 
+      student.Name?.toLowerCase().trim() === Name?.toLowerCase().trim()
+    );
+    
+    if (nameExists) {
+      setToast({ open: true, msg: "Un élève avec ce nom existe déjà!", type: "error" });
+      return;
+    }
+    
     const RegisterStud = await fetch("http://localhost:3000/Student", {
       method: "POST",
       headers: {
@@ -153,6 +171,18 @@ export function Etudiantes() {
     const Age = age.current?.value
     const Telephone = phone.current?.value
     const Date = date.current?.value
+    
+    // Vérification: empêcher les noms dupliqués (sauf pour l'élève actuel)
+    const nameExists = stude.some((student: any) => 
+      student.id !== showModalup && // Ignorer l'élève en cours de modification
+      student.Name?.toLowerCase().trim() === Name?.toLowerCase().trim()
+    );
+    
+    if (nameExists) {
+      setToast({ open: true, msg: "Un élève avec ce nom existe déjà!", type: "error" });
+      return;
+    }
+    
     if (modules.length == 0) {
       setToast({ open: true, msg: "Aucun module sélectionné", type: "error" })
       return
@@ -182,16 +212,24 @@ export function Etudiantes() {
         <Alert severity={toast.type}>{toast.msg}</Alert>
       </Snackbar>
       <Typography variant="h4" className={Styles.title} gutterBottom>
-        Gestion des élèves
+        {t('studentManagement')}
       </Typography>
       <Box mb={2} display="flex" gap={2}>
         <TextField
           onChange={(e: any) => seracheStud(e.target.value)}
-          label="🔍 Rechercher par nom"
+          label={`${t('search')}`}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search sx={{ color: 'action.active' }} />
+              </InputAdornment>
+            ),
+          }}
           variant="outlined"
           size="small"
+          placeholder={`${t('search')} ${t('name')}, ${t('phone')}, ${t('specialty')}...`}
           sx={{
-            width: 250,
+            width: 300,
             background: "#f9fafb",
             borderRadius: "10px"
           }}
@@ -203,95 +241,177 @@ export function Etudiantes() {
           onClick={() => setShowModal(true)}
           sx={{ borderRadius: "10px", textTransform: "none" }}
         >
-          Ajouter un élève
+          {t('addStudent')}
         </Button>
       </Box>
       {stude.length == 0 ? <Typography variant="body1"
         align="center"
         color="textSecondary"
-        style={{ marginTop: "29px" }}>Aucune donnée</Typography> :
-        <Paper sx={{ borderRadius: "12px" }}>
+        style={{ marginTop: "29px" }}>{t('noData')}</Typography> :
+        <Paper sx={{ borderRadius: "12px", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}>
+          <TableContainer sx={{ maxHeight: 600 }}>
           <Table className={Styles.table}>
             <TableHead sx={{ background: "#f1f5f9" }}>
               <TableRow >
                 <TableCell sx={{
-                  width: "200px",
+                  width: "18%",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }}>Nom</TableCell>
+                  textOverflow: "ellipsis",
+                  fontWeight: "bold"
+                }}>{t('name')}</TableCell>
                 <TableCell sx={{
-                  width: "200px",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }} >Âge</TableCell>
+                  width: "8%",
+                  textAlign: "center",
+                  fontWeight: "bold"
+                }}>{t('age')}</TableCell>
                 <TableCell sx={{
-                  width: "200px",
+                  width: "12%",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }}>Niveau</TableCell>
+                  textOverflow: "ellipsis",
+                  fontWeight: "bold"
+                }}>{t('level')}</TableCell>
                 <TableCell sx={{
-                  width: "200px",
+                  width: "12%",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }}>specialite</TableCell>
+                  textOverflow: "ellipsis",
+                  fontWeight: "bold"
+                }}>{t('specialty')}</TableCell>
                 <TableCell sx={{
-                  width: "200px",
+                  width: "13%",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }}>Téléphone</TableCell>
+                  textOverflow: "ellipsis",
+                  fontWeight: "bold"
+                }}>{t('phone')}</TableCell>
                 <TableCell sx={{
-                  width: "200px",
+                  width: "12%",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }}>Modules</TableCell>
+                  textOverflow: "ellipsis",
+                  fontWeight: "bold"
+                }}>{t('modules')}</TableCell>
                 <TableCell sx={{
-                  width: "200px",
+                  width: "10%",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }}>Date</TableCell>
+                  textOverflow: "ellipsis",
+                  fontWeight: "bold"
+                }}>{t('date')}</TableCell>
                 <TableCell sx={{
-                  width: "200px",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }}>genre</TableCell>
+                  width: "8%",
+                  textAlign: "center",
+                  fontWeight: "bold"
+                }}>{t('gender')}</TableCell>
                 <TableCell sx={{
-                  width: "200px",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }}>Actions</TableCell>
+                  width: "17%",
+                  textAlign: "center",
+                  fontWeight: "bold"
+                }}>{t('actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody >
-              {(stude ?? []).map((item: any) => (
+              {(stude ?? [])
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((item: any) => (
                 <TableRow key={(item as any).id} hover>
-                  <TableCell sx={{ textAlign: 'center' }}>{item.Name}</TableCell>
-                  <TableCell >{item.Age}</TableCell>
-                  <TableCell >{item.Nivuea}</TableCell>
-                  <TableCell>{item.Spécialité ?? "rien"}</TableCell>
-                  <TableCell>{item.Telephone}</TableCell>
-                  <TableCell>{(item.modules || []).map((mid: string) => (mat.find((mm:any)=> mm.id === mid)?.name) || "").filter(Boolean).join(",")}</TableCell>
-                  <TableCell >{(item.Date || "").split("T")[0]}</TableCell>
-                  <TableCell>{item.Genre}</TableCell>
-                  <TableCell>
-                    <Box display="flex" gap={1}>
-                      <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowModalup((item as any).id); getOneStud((item as any).id) }} startIcon={<Update />} size="small" variant="outlined">Modifier</Button>
-                      <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIdsupprimer((item as any).id) }} startIcon={<DeleteIcon />} size="small" variant="outlined" color="error">Supprimer</Button>
-                      <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedStudent(item) }} startIcon={<VisibilityIcon />} size="small" variant="outlined">Voir</Button>
+                  <TableCell sx={{ 
+                    whiteSpace: "nowrap", 
+                    overflow: "hidden", 
+                    textOverflow: "ellipsis",
+                    fontWeight: "500"
+                  }}>{item.Name}</TableCell>
+                  <TableCell sx={{ 
+                    textAlign: "center"
+                  }}>{item.Age}</TableCell>
+                  <TableCell sx={{ 
+                    whiteSpace: "nowrap", 
+                    overflow: "hidden", 
+                    textOverflow: "ellipsis"
+                  }}>{item.Nivuea}</TableCell>
+                  <TableCell sx={{ 
+                    whiteSpace: "nowrap", 
+                    overflow: "hidden", 
+                    textOverflow: "ellipsis"
+                  }}>{item.Spécialité ?? "rien"}</TableCell>
+                  <TableCell sx={{ 
+                    whiteSpace: "nowrap", 
+                    overflow: "hidden", 
+                    textOverflow: "ellipsis"
+                  }}>{item.Telephone}</TableCell>
+                  <TableCell sx={{ 
+                    whiteSpace: "nowrap", 
+                    overflow: "hidden", 
+                    textOverflow: "ellipsis"
+                  }}>{(item.modules || []).map((mid: string) => (mat.find((mm:any)=> mm.id === mid)?.name) || "").filter(Boolean).join(",")}</TableCell>
+                  <TableCell sx={{ 
+                    whiteSpace: "nowrap", 
+                    overflow: "hidden", 
+                    textOverflow: "ellipsis"
+                  }}>{(item.Date || "").split("T")[0]}</TableCell>
+                  <TableCell sx={{ 
+                    textAlign: "center"
+                  }}>{item.Genre}</TableCell>
+                  <TableCell sx={{ 
+                    textAlign: "center"
+                  }}>
+                    <Box display="flex" gap={0.3} justifyContent="center" flexDirection="column">
+                      <Button 
+                        type="button" 
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowModalup((item as any).id); getOneStud((item as any).id) }} 
+                        startIcon={<Update />} 
+                        size="small" 
+                        variant="outlined"
+                        sx={{ minWidth: "auto", px: 0.5, fontSize: "0.7rem" }}
+                      >
+                        {t('edit')}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIdsupprimer((item as any).id) }} 
+                        startIcon={<DeleteIcon />} 
+                        size="small" 
+                        variant="outlined" 
+                        color="error"
+                        sx={{ minWidth: "auto", px: 0.5, fontSize: "0.7rem" }}
+                      >
+                        {t('delete')}
+                      </Button>
+                      <Button 
+                        type="button" 
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedStudent(item) }} 
+                        startIcon={<VisibilityIcon />} 
+                        size="small" 
+                        variant="outlined"
+                        sx={{ minWidth: "auto", px: 0.5, fontSize: "0.7rem" }}
+                      >
+                        {t('view')}
+                      </Button>
                     </Box>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+          </TableContainer>
+          <TablePagination
+            component="div"
+            count={stude?.length || 0}
+            page={page}
+            onPageChange={(_, newPage) => setPage(newPage)}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={(event) => {
+              setRowsPerPage(parseInt(event.target.value, 10));
+              setPage(0);
+            }}
+            rowsPerPageOptions={[5, 10, 25, 50]}
+            labelRowsPerPage={`${t('rowsPerPage')}:`}
+            labelDisplayedRows={({ from, to, count }) => 
+              `${from}-${to} ${t('of')} ${count !== -1 ? count : `${t('moreThan')} ${to}`}`
+            }
+          />
         </Paper>}
       {/* === Modals === */}
       {/* Voir */}
@@ -380,7 +500,11 @@ export function Etudiantes() {
                         </Typography>
                         <Typography variant="body1" fontWeight="600" color="#111827">
                           {(selectedStudent.Groupe || [])
-                            .map((gid: string) => (groupe.find((gg:any)=> gg.id === gid)?.name) || "")
+                            .map((gid: string) => {
+                              const groupName = (groupe.find((gg:any)=> gg.id === gid)?.name) || "";
+                              // إزالة النص الإضافي من اسم المجموعة
+                              return groupName.split(' – ')[0] || groupName;
+                            })
                             .filter(Boolean)
                             .join(", ")}
                         </Typography>
@@ -467,11 +591,11 @@ export function Etudiantes() {
       <Modal open={showModal} onClose={() => setShowModal(false)}>
         <Box className={Styles.modalOverlay}>
           <Box className={Styles.modalContent1} >
-            <Typography variant="h6" fontWeight="bold" mb={2}>Ajouter un élève</Typography>
+            <Typography variant="h6" fontWeight="bold" mb={2}>{t('addStudent')}</Typography>
             <form onSubmit={add} className={Styles.form}>
-              <TextField inputRef={name} label="Nom complet" required fullWidth margin="normal" />
-              <TextField inputRef={age} label="Âge" type="number" required fullWidth margin="normal" />
-              <Typography>Spécialité</Typography>
+              <TextField inputRef={name} label={t('studentName')} required fullWidth margin="normal" />
+              <TextField inputRef={age} label={t('age')} type="number" required fullWidth margin="normal" />
+              <Typography>{t('specialty')}</Typography>
               <Select onChange={handlspecialite} value={Spécialité} >
                 <MenuItem value={"Fileua"}>Philo</MenuItem>
                 <MenuItem value={"Scientifique"}>Scientifique</MenuItem>
@@ -515,8 +639,8 @@ export function Etudiantes() {
               <Typography variant="subtitle1">Date :</Typography>
               <TextField type="date" inputRef={date} required fullWidth margin="normal" />
               <Box mt={2} display="flex" justifyContent="flex-end" gap={2}>
-                <Button variant="contained" type="submit">Enregistrer</Button>
-                <Button variant="outlined" onClick={() => setShowModal(false)}>Annuler</Button>
+                <Button variant="contained" type="submit">{t('save')}</Button>
+                <Button variant="outlined" onClick={() => setShowModal(false)}>{t('cancel')}</Button>
               </Box>
             </form>
           </Box>
@@ -526,11 +650,11 @@ export function Etudiantes() {
       <Modal open={!!showModalup} onClose={() => setShowModalup(null)}>
         <Box className={Styles.modalOverlay}>
           <Box className={Styles.modalContent1} >
-            <Typography variant="h6" fontWeight="bold" mb={2}>Modifier un élève</Typography>
+            <Typography variant="h6" fontWeight="bold" mb={2}>{t('editStudent')}</Typography>
             <form onSubmit={updatOne} className={Styles.form}>
               <TextField inputRef={name} required fullWidth margin="normal" />
               <TextField inputRef={age} type="number" required fullWidth margin="normal" />
-              <Typography>Niveau</Typography>
+              <Typography>{t('level')}</Typography>
               <Select onChange={handlnivuea} value={Nivuea} input={<OutlinedInput />} MenuProps={MenuProps} fullWidth>
                 <MenuItem value={"Première moyenne"}>Première moyenne</MenuItem>
                 <MenuItem value={"Seconde moyenne"}>Seconde moyenne</MenuItem>
@@ -574,8 +698,8 @@ export function Etudiantes() {
               <Typography variant="subtitle1">Date :</Typography>
               <TextField type="date" inputRef={date} required fullWidth margin="normal" />
               <Box mt={2} display="flex" justifyContent="flex-end" gap={2}>
-                <Button variant="contained" type="submit">Modifier</Button>
-                <Button variant="outlined" onClick={() => { setShowModalup(null), setModules([]), setspecialite(""), setniveau("") }}>Annuler</Button>
+                <Button variant="contained" type="submit">{t('edit')}</Button>
+                <Button variant="outlined" onClick={() => { setShowModalup(null), setModules([]), setspecialite(""), setniveau("") }}>{t('cancel')}</Button>
               </Box>
             </form>
           </Box>
@@ -585,10 +709,10 @@ export function Etudiantes() {
       <Modal open={idASupprimer !== null} onClose={() => setIdsupprimer(null)}>
         <Box className={Styles.modalOverlay}>
           <Box className={Styles.modalContent} sx={{ maxWidth: "400px", borderRadius: "16px", textAlign: "center" }}>
-            <Typography variant="h6" mb={2}>Êtes-vous sûr ?</Typography>
+            <Typography variant="h6" mb={2}>{t('confirmDelete')}</Typography>
             <Box display="flex" justifyContent="center" gap={2}>
-              <Button onClick={() => DeleteStud()} variant="contained" color="error">Oui</Button>
-              <Button onClick={() => setIdsupprimer(null)} variant="outlined">Non</Button>
+              <Button onClick={() => DeleteStud()} variant="contained" color="error">{t('yes')}</Button>
+              <Button onClick={() => setIdsupprimer(null)} variant="outlined">{t('no')}</Button>
             </Box>
           </Box>
         </Box>

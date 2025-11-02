@@ -23,6 +23,10 @@ export const RegistnewPaimente = async ({
   if (!idMat || !idStud || !Mois || !Montante || !Date)
     return { StatusCode: 404, data: "you`ve to insert all info.. " };
   createMatieresTable();
+  
+  // تحويل Mois إلى array إذا كان string
+  const moisArray = Array.isArray(Mois) ? Mois : [Mois];
+  
   const mapMatieres = Array.isArray(idMat)
     ? idMat.map((id: any) => ({ idMat: id }))
     : [{ idMat }];
@@ -39,20 +43,45 @@ export const RegistnewPaimente = async ({
     (acc: number, cur: any) => acc + (cur.prix || 0),
     0
   );
-  const Restprix = Montante - totalprcieMat * Mois.length;
-  const bool = Restprix === 0 ? "Paimente Complet" : Math.abs(Restprix);
+  const Restprix = Montante - totalprcieMat * moisArray.length;
+  const bool = Restprix === 0 ? "Paimente Complet" : 
+               Restprix > 0 ? "Paimente Partiel - Surplus" : "Paimente Partiel - Insuffisant";
 
-  // check duplicate months
-  if (existing && existing.length) {
-    const paidMonths = existing.flatMap((p) => p.Mois || []);
-    const dup = Mois.filter((m: string) => paidMonths.includes(m));
-    if (dup.length > 0)
-      return { StatusCode: 400, data: `Ce Mois deja Payees :${dup}` };
+  // البحث عن دفعة موجودة لنفس الشهر والمادة
+  const existingPayment = existing.find((p) => {
+    const pMois = p.Mois ? (typeof p.Mois === 'string' ? JSON.parse(p.Mois) : p.Mois) : [];
+    const pMatieres = p.matieres ? (typeof p.matieres === 'string' ? JSON.parse(p.matieres) : p.matieres) : [];
+    const hasMonth = pMois.some((m: string) => moisArray.includes(m));
+    const hasMatiere = pMatieres.some((mat: any) => matIds.includes(mat.idMat));
+    return hasMonth && hasMatiere;
+  });
+
+  if (existingPayment) {
+    // إذا كانت الدفعة مكتملة، منع الإضافة
+    if (existingPayment.status === 'Paimente Complet') {
+      return { StatusCode: 400, data: `Ce Mois deja Payees completement :${moisArray}` };
+    }
+    
+    // إكمال الدفعة الموجودة
+    const newTotal = (existingPayment.Montante || 0) + Montante;
+    const newRestprix = newTotal - totalprcieMat * moisArray.length;
+    const newStatus = newRestprix === 0 ? "Paimente Complet" : 
+                     newRestprix > 0 ? "Paimente Partiel - Surplus" : "Paimente Partiel - Insuffisant";
+    
+    const { updatePayment } = require('../models/sqlite/PaimentesModel');
+    updatePayment(existingPayment.id, {
+      Montante: newTotal,
+      status: newStatus,
+      Date: Date
+    });
+    
+    return { StatusCode: 200, data: "Paiment mis à jour avec succès" };
   }
 
+  // إنشاء دفعة جديدة
   const newP = insertPayment({
     studentId: idStud,
-    Mois,
+    Mois: moisArray,
     Montante,
     Date,
     matieres: mapMatieres,
@@ -115,9 +144,76 @@ export const getOnePaimente = async ({
 
 export const SearchePaiementStud = async ({ identifiante, search }: any) => {
   if (!identifiante) return { StatusCode: 404, data: "failed check tocken " };
-  // naive search: find students whose name matches and then payments by their id
-  const matched: any[] = [];
-  // we don't have direct SQL join here because student model is separate; simplified: return all payments and let frontend filter
-  const all = listPayments();
-  return { StatusCode: 200, data: all };
+  
+  // جلب مدفوعات الطالب المحدد
+  const studentPayments = listPaymentsByStudent(search);
+  
+  // تحويل البيانات لتتطابق مع ما يتوقعه Frontend
+  const formattedPayments = studentPayments.map((payment: any) => {
+    let matieres = [];
+    let mois = [];
+    
+    // معالجة matieres بأمان
+    if (payment.matieres) {
+      if (typeof payment.matieres === 'string') {
+        try {
+          matieres = JSON.parse(payment.matieres);
+        } catch (e) {
+          console.log('Error parsing matieres:', payment.matieres);
+          matieres = [];
+        }
+      } else if (Array.isArray(payment.matieres)) {
+        matieres = payment.matieres;
+      }
+    }
+    
+    // معالجة Mois بأمان
+    if (payment.Mois) {
+      if (typeof payment.Mois === 'string') {
+        try {
+          mois = JSON.parse(payment.Mois);
+        } catch (e) {
+          console.log('Error parsing Mois:', payment.Mois);
+          mois = [payment.Mois]; // إذا فشل parsing، اعتبره string واحد
+        }
+      } else if (Array.isArray(payment.Mois)) {
+        mois = payment.Mois;
+      }
+    }
+    
+    const firstMatiere = matieres[0];
+    const firstMois = mois[0];
+    
+    // حساب السعر الإجمالي المطلوب
+    const matiere = firstMatiere ? require('../models/sqlite/MatieresModel').findMatiereById(firstMatiere.idMat) : null;
+    const prixMatiere = matiere?.prix || 0;
+    const montantTotal = prixMatiere * mois.length;
+    const montantPaye = payment.Montante || 0;
+    const montantRestant = Math.max(0, montantTotal - montantPaye);
+    
+    // تحديد الحالة
+    let statut = 'en_attente';
+    if (payment.status === 'Paimente Complet') {
+      statut = 'paye';
+    } else if (payment.status && payment.status.includes('Partiel')) {
+      statut = 'partiel';
+    }
+    
+    return {
+      id: payment.id,
+      _id: payment.id,
+      matiereId: firstMatiere?.idMat || null,
+      mois: firstMois || '',
+      annee: '2025',
+      montant: montantTotal,
+      montantTotal: montantTotal,
+      montantPaye: montantPaye,
+      montantRestant: montantRestant,
+      datePaiement: payment.Date || new Date().toISOString().split('T')[0],
+      methodePaiement: 'cash',
+      statut: statut
+    };
+  });
+  
+  return { StatusCode: 200, data: formattedPayments };
 };

@@ -3,9 +3,13 @@ import Styles from "../Styles/Login.module.css";
 import { useNavigate } from "react-router-dom";
 import { usAuth } from "../Context/AuthContext";
 import { Alert, Snackbar } from "@mui/material";
+import { useSchool } from "../Context/SchoolContext";
+import { useLanguage } from "../Context/LanguageContext";
 export function Logine() {
   const [Toast, setToast] = useState<{ open: boolean, msg: string, type: "success" | "error" }>({ open: false, msg: "", type: "success" })
   const { login } = usAuth()
+  const { settings } = useSchool()
+  const { language } = useLanguage()
   const navigate = useNavigate()
   let identifianteref = useRef<HTMLInputElement>(null)
   let passwordref = useRef<HTMLInputElement>(null)
@@ -31,7 +35,13 @@ export function Logine() {
       identifianteref.current!.value = "",
         passwordref.current!.value = ""
       navigate("/TBoard")
-      setToast({ open: true, msg: "Bienvenu dans Votre application", type: 'success' })
+      setToast({ 
+        open: true, 
+        msg: language === 'ar' 
+          ? `مرحباً بك في ${settings.schoolNameAr}` 
+          : `Bienvenu dans ${settings.schoolNameFr}`, 
+        type: 'success' 
+      })
 
     }
     else {
@@ -47,9 +57,13 @@ export function Logine() {
       </Snackbar>
       {/* Left Side */}
       <div className={Styles.leftSide}>
-        <h1 className={Styles.logo}>Taj Ilme</h1>
-        <h2 className={Styles.subTitle}>Ecodle De Coures et </h2>
-        <p className={Styles.slogan}>Votre espace sécurisé et performant</p>
+        <h1 className={Styles.logo}>{language === 'ar' ? settings.schoolNameAr : settings.schoolNameFr}</h1>
+        <h2 className={Styles.subTitle}>
+          {language === 'ar' ? 'للتعليم المتميز والتربية الحديثة' : 'For Excellence in Education and Modern Training'}
+        </h2>
+        <p className={Styles.slogan}>
+          {language === 'ar' ? 'نبني جيل المستقبل' : 'Building the Future Generation'}
+        </p>
       </div>
 
       {/* Right Side */}

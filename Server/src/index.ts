@@ -15,11 +15,13 @@ import Student from "./routes/Students";
 import Matier from "./routes/Matieres";
 import Abcense from "./routes/Abcenses";
 import Paimentes from "./routes/Paimentes";
+import paiements from "./routes/paiements";
 import Dachborde from "./routes/Dachbord";
 import Groupes from "./routes/Groupes";
 import Classe from "./routes/ClasseRoute";
 import GroupeTims from "./routes/GroupeRoute";
-import Teachers from "./routes/Teachers";
+import Settings from "./routes/Settings";
+// import Teachers from "./routes/Teachers"; // ملف غير موجود
 import { createTeachersTable } from "./models/sqlite/TeacherModel";
 import { ensureAdmin } from "./services/LogineSqlite";
 const app = express();
@@ -49,11 +51,13 @@ app.use(Student);
 app.use(Matier);
 app.use(Abcense);
 app.use(Paimentes);
+app.use(paiements);
 app.use(Dachborde);
 app.use(Groupes);
 app.use(Classe);
 app.use(GroupeTims);
-app.use(Teachers);
+app.use(Settings);
+// app.use(Teachers); // ملف غير موجود
 
 const port = 3000;
 app.listen(port, () => {

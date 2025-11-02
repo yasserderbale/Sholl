@@ -11,6 +11,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import PaymentIcon from "@mui/icons-material/Payment";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import SchoolIcon from "@mui/icons-material/School";
+import GroupsIcon from '@mui/icons-material/Groups';
 import { usAuth } from '../Context/AuthContext';
 import { useLanguage } from '../Context/LanguageContext';
 
@@ -111,8 +112,16 @@ export function TablBoard() {
         <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
           <Paper className={Styles.card} elevation={3}>
             <SchoolIcon style={{ fontSize: 40, color: "#9c27b0" }} />
-            <Typography variant="h6">{t('numberOfSpecialties') || 'عدد التخصصات'}</Typography>
+            <Typography variant="h6">{t('numberOfSubjects') || 'عدد المواد'}</Typography>
             <Typography variant="h4">{stats?.totalSubjects || 0}</Typography>
+          </Paper>
+        </Box>
+        
+        <Box sx={{ flex: '1 1 250px', minWidth: '250px' }}>
+          <Paper className={Styles.card} elevation={3}>
+            <GroupsIcon style={{ fontSize: 40, color: "#00897b" }} />
+            <Typography variant="h6">{t('numberOfGroups') || 'عدد المجموعات'}</Typography>
+            <Typography variant="h4">{stats?.totalGroups || 0}</Typography>
           </Paper>
         </Box>
       </Box>

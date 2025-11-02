@@ -549,7 +549,7 @@ const Classes: React.FC = () => {
                     classGroups[(selectedClass as any).id]?.map((g: any) => (
                       <TableRow key={(g as any).id}>
                         <TableCell>
-                          {g.groupeId.name.split(' – ')[0] || g.groupeId.name}
+                          {g.groupeId?.name ? (g.groupeId.name.split(' – ')[0] || g.groupeId.name) : 'Groupe non trouvé'}
                         </TableCell>
                         <TableCell>{g.heureDebut}</TableCell>
                         <TableCell>{g.heureFin}</TableCell>

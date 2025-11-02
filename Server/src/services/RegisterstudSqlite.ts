@@ -8,6 +8,7 @@ import {
   createStudentsTable,
 } from "../models/sqlite/StudentModel";
 import { pushStudentToGroups, removeStudentFromGroups } from "./GroupeSqlite";
+import { initDatabase } from "../db/sqlite";
 
 export const Registerstud = async ({
   identifinate,
@@ -121,7 +122,32 @@ export const DeletStudents = async ({ identifinate, idStud }: any) => {
   if (!idStud) return { StatusCode: 404, data: "id not provider" };
   const existing = findStudentById(idStud);
   if (!existing) return { StatusCode: 404, data: "no Studente" };
-  // remove student from any groupes
+  
+  const db = initDatabase();
+  
+  // 1. حذف جميع مدفوعات الطالب من paiements_fr
+  try {
+    const deletedFr = db.prepare(`
+      DELETE FROM paiements_fr 
+      WHERE json_extract(studentId, '$[0]') = ? 
+         OR studentId LIKE ?
+    `).run(idStud, `%"${idStud}"%`);
+    console.log(`Deleted ${deletedFr.changes} payments from paiements_fr for student ${idStud}`);
+  } catch (e) {
+    console.error("failed to delete payments from paiements_fr", e);
+  }
+  
+  // 2. حذف جميع مدفوعات الطالب من paiements القديم
+  try {
+    const deletedOld = db.prepare(`
+      DELETE FROM paiements WHERE idStud = ?
+    `).run(idStud);
+    console.log(`Deleted ${deletedOld.changes} payments from paiements for student ${idStud}`);
+  } catch (e) {
+    console.error("failed to delete payments from paiements", e);
+  }
+  
+  // 3. حذف الطالب من المجموعات
   try {
     if (existing.Groupe && Array.isArray(existing.Groupe)) {
       removeStudentFromGroups(existing.Groupe, idStud);
@@ -129,6 +155,8 @@ export const DeletStudents = async ({ identifinate, idStud }: any) => {
   } catch (e) {
     console.error("failed to remove student from groupes on delete", e);
   }
+  
+  // 4. حذف الطالب نفسه
   deleteStudent(idStud);
-  return { StatusCode: 200, data: "succued delete" };
+  return { StatusCode: 200, data: "Student and all related payments deleted successfully" };
 };

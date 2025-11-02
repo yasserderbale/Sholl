@@ -15,7 +15,6 @@ import Matier from "./routes/Matieres";
 import Abcense from "./routes/Abcenses";
 import Paimentes from "./routes/Paimentes";
 import paiements from "./routes/paiements";
-import Dachborde from "./routes/Dachbord";
 import Dashboard from "./routes/Dashboard";
 import Groupes from "./routes/Groupes";
 import Classe from "./routes/ClasseRoute";
@@ -54,7 +53,6 @@ app.use(Matier);
 app.use(Abcense);
 app.use(Paimentes);
 app.use(paiements);
-app.use(Dachborde);
 app.use(Dashboard); // Dashboard statistics API
 app.use(Groupes);
 app.use(Classe);

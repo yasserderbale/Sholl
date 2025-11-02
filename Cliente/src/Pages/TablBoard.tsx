@@ -18,8 +18,9 @@ interface DashboardStats {
   totalStudents: number;
   newStudentsThisMonth: number;
   paymentsThisMonth: number;
-  totalAmount: number;
-  specialties: { _id: string; nbreleves: number }[];
+  totalAmountThisMonth: number;
+  totalSubjects?: number;
+  totalGroups?: number;
   monthlyRevenue: { month: string; amount: number }[];
 }
 
@@ -43,7 +44,7 @@ export function TablBoard() {
       
       if (response.ok) {
         const data = await response.json();
-        setStats(data); // البيانات ترسل مباشرة من Backend
+        setStats(data.data); // البيانات في data.data من Backend
       }
     } catch (error) {
       console.error('Erreur lors de la récupération des statistiques:', error);
@@ -103,7 +104,7 @@ export function TablBoard() {
           <Paper className={Styles.card} elevation={3}>
             <MonetizationOnIcon style={{ fontSize: 40, color: "#d32f2f" }} />
             <Typography variant="h6">{t('totalAmountCollected')}</Typography>
-            <Typography variant="h4">{(stats?.totalAmount || 0).toLocaleString()} DA</Typography>
+            <Typography variant="h4">{(stats?.totalAmountThisMonth || 0).toLocaleString()} DA</Typography>
           </Paper>
         </Box>
         
@@ -111,7 +112,7 @@ export function TablBoard() {
           <Paper className={Styles.card} elevation={3}>
             <SchoolIcon style={{ fontSize: 40, color: "#9c27b0" }} />
             <Typography variant="h6">{t('numberOfSpecialties') || 'عدد التخصصات'}</Typography>
-            <Typography variant="h4">{stats?.specialties?.length || 0}</Typography>
+            <Typography variant="h4">{stats?.totalSubjects || 0}</Typography>
           </Paper>
         </Box>
       </Box>

@@ -154,7 +154,7 @@ const GetOnestudePaim = async (idPaiment:any,idStud:any)=>{
     alert(response.data)
     return
   }
-  setonPaimentsget(response.data)
+  // setonPaimentsget(response.data) // Function not defined
   setcompletepaymodal(true)
   setidstudent(idStud)
   setidpaimente(idPaiment)

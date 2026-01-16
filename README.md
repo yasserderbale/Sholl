@@ -1,1 +1,1 @@
-Cette application est réalisée avec Electrn.js
+Cette application est un Desktop pore la gestion des ecoles réalisée avec Electrn.js
